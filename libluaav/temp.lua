@@ -41,9 +41,7 @@ local modifiernames = {
 }
 	
 ffi.metatype("av_Window", {
-	__tostring = function(self)
-		return format("Window(%p)", self)
-	end,
+	--__tostring = function(self) return format("Window(%p)", self) end,
 	__index = {
 		sync = lib.av_window_sync,
 		cursor = lib.av_window_cursor,
@@ -67,6 +65,8 @@ function Window(title, w, h, x, y)
 	h = h or 480
 	
 	local win = lib.av_window_create(title, x, y, w, h)
+	print(win)
+	
 	-- install gc handler:
 	ffi.gc(win, function(self) 
 		print("gc window", self)
@@ -105,6 +105,7 @@ print("initialized")
 --------------------------------------------------------------------------------
 
 local win = Window()
+
 print(win)
 
 win:fullscreen(true)
@@ -116,3 +117,4 @@ collectgarbage()
 collectgarbage()
 
 av.run() -- forever
+print("ok")

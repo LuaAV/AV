@@ -21,23 +21,26 @@ typedef enum {
 	AV_MODIFIERS_COUNT
 } AV_MODIFIERS;
 
+typedef struct av_PixelRect {
+	int x, y, w, h;
+} av_PixelRect;
+
 typedef struct av_Window {
+	av_PixelRect dim, fullscreendim;
+
 	bool shift, ctrl, alt, cmd;
 	
 	// whether to clear the window before each frame (true by default)
 	bool autoclear;	
-	// request an active stereo OpenGL context (NYI)
-	bool stereo; 
+	bool isfullscreen;
+	
+	char * title;
 
 	void (*draw_callback)(struct av_Window * self, double dt);
 	void (*mouse_callback)(struct av_Window * self, AV_EVENT event, int btn, int x, int y, int dx, int dy);
 	void (*key_callback)(struct av_Window * self, AV_EVENT event, int key);
 	void (*modifiers_callback)(struct av_Window * self, AV_EVENT event, AV_MODIFIERS key);
 } av_Window;
-
-typedef struct av_PixelRect {
-	int x, y, w, h;
-} av_PixelRect;
 
 int av_init();
 int av_run();

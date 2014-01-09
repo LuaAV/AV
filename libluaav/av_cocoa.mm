@@ -24,8 +24,39 @@ struct av_WindowCocoa;
 @end
 
 typedef struct av_WindowCocoa : public av_Window {
-	NSWindow * cocoawindow;
+	NSWindow * window;
 	AVOpenGLView * glview;
+	
+	av_WindowCocoa(const char * title, int x, int y, int w, int h) {
+		dim.x = x;
+		dim.y = y;
+		dim.w = w;
+		dim.h = h;
+	
+		shift = ctrl = alt = cmd = 0;
+		autoclear = 1;
+		draw_callback = 0;
+		mouse_callback = 0;
+		key_callback = 0;
+		modifiers_callback = 0;
+		
+		isfullscreen = 0;
+		
+		this->title = (char *)malloc(strlen(title)+1);
+		strcpy(this->title, title);
+		
+		window = 0;
+		glview = 0;
+	}
+	
+	~av_WindowCocoa() {
+		close();
+		free(this->title);
+	}	
+	
+	void open();
+	void close();
+	
 } av_WindowCocoa;
 
 @interface AVAppDelegate : NSObject <NSApplicationDelegate, NSWindowDelegate> {
@@ -434,6 +465,173 @@ float rot = 0.;
 }
 @end
 
+void av_WindowCocoa::open() {
+	// close any existing window
+	close();
+
+	// get new extents
+	NSRect nsdim;
+	if (isfullscreen) {
+		fullscreendim = av_screens_main();	// TODO: current screen?
+		nsdim = NSMakeRect(fullscreendim.x, fullscreendim.y, fullscreendim.w, fullscreendim.h);
+	} else {
+		nsdim = NSMakeRect(dim.x, dim.y, dim.w, dim.h);
+	}
+	
+	// create & configure NSWindow:
+	if (isfullscreen) {
+		window = [[[NSWindow alloc]	initWithContentRect:nsdim 
+									styleMask:NSBorderlessWindowMask 
+									backing:NSBackingStoreBuffered 
+									defer:YES]
+								autorelease];
+		[window setHidesOnDeactivate:YES];
+		// set window to be above menu bar
+		[window setLevel:NSMainMenuWindowLevel+1];
+	} else {
+		window = [[[NSWindow alloc]	initWithContentRect:nsdim
+									styleMask:NSTitledWindowMask | 								
+											  NSResizableWindowMask |
+											  NSClosableWindowMask | 
+											  NSMiniaturizableWindowMask
+									backing:NSBackingStoreBuffered 
+									defer:NO]
+							autorelease];
+		[window setTitle:[NSString stringWithUTF8String:title]];
+		[window cascadeTopLeftFromPoint:NSMakePoint(dim.x, dim.y)];	
+	}
+	[window setOpaque:YES];
+	
+	// and add an opengl view:
+    glview = [[AVOpenGLView alloc] initWithFrame:nsdim];
+    glview->avwindow = this;
+    [window setContentView:glview];
+    // using the glview as delegate:
+	[window setDelegate: glview];
+	
+	// activate it:
+	[window makeKeyAndOrderFront:nil];
+}
+
+void av_WindowCocoa::close() {
+	if (window) {
+		[window close];
+		[window release];
+	}
+}
+
+
+
+av_Window * av_window_create(const char * title, int x, int y, int w, int h) {
+
+	if (!title) {
+		title = [appName UTF8String];
+	}
+
+	av_WindowCocoa * avwindow = new av_WindowCocoa(title, x, y, w, h);
+	
+	avwindow->open();
+	
+	return avwindow;
+} 
+
+int av_window_fullscreen(av_Window * avwindow, int enable) {
+	((av_WindowCocoa *)avwindow)->isfullscreen = enable;
+	((av_WindowCocoa *)avwindow)->open();
+	return 0;
+}
+
+int av_window_sync(av_Window * avwindow, int enable) {
+	const GLint interval = enable ? 1 : 0;
+	[[((av_WindowCocoa *)avwindow)->glview openGLContext] setValues:&interval forParameter: NSOpenGLCPSwapInterval];
+	return 0;
+}
+
+int av_window_cursor(av_Window * avwindow, int enable) {
+	static int cursorhides = 0;
+	if (enable) {
+		while (cursorhides < 0) {
+			[NSCursor unhide];
+			cursorhides++;
+		}
+	} else {
+		[NSCursor hide];
+		cursorhides--;
+	}
+	return 0;
+}
+
+/*
+	switch(style) {
+	case Window::ARROW:				[[NSCursor arrowCursor] set];				break;
+	case Window::IBEAM:				[[NSCursor IBeamCursor] set];				break;
+//	case Window::CONTEXTUAL_MENU:	[[NSCursor contextualMenuCursor] set];		break;
+	case Window::CROSSHAIR:			[[NSCursor crosshairCursor] set];			break;
+	case Window::CLOSED_HAND:		[[NSCursor closedHandCursor] set];			break;
+//	case Window::DRAG_COPY:			[[NSCursor dragCopyCursor ] set];			break;
+//	case Window::DRAG_LINK:			[[NSCursor dragLinkCursor ] set];			break;
+//	case Window::NO_OP:				[[NSCursor operationNotAllowedCursor] set];	break;
+	case Window::OPEN_HAND:			[[NSCursor openHandCursor] set];			break;
+	case Window::POINTING_HAND:		[[NSCursor pointingHandCursor] set];		break;
+	case Window::RESIZE_LEFT:		[[NSCursor resizeLeftCursor] set];			break;
+	case Window::RESIZE_RIGHT:		[[NSCursor resizeRightCursor] set];			break;
+	case Window::RESIZE_LEFTRIGHT:	[[NSCursor resizeLeftRightCursor] set];		break;
+	case Window::RESIZE_UP:			[[NSCursor resizeUpCursor] set];			break;
+	case Window::RESIZE_DOWN:		[[NSCursor resizeDownCursor] set];			break;
+	case Window::RESIZE_UPDOWN:		[[NSCursor resizeUpDownCursor] set];		break;
+	case Window::DISAPPEARING_ITEM:	[[NSCursor disappearingItemCursor] set];	break;
+	}
+}
+*/
+
+
+
+int av_window_flush(av_Window * avwindow) {
+	[[((av_WindowCocoa *)avwindow)->glview openGLContext] flushBuffer];
+	return 0;
+}
+
+int av_window_destroy(av_Window * avwindow) {
+	delete ((av_WindowCocoa *)avwindow);
+	return 0;
+}
+
+av_PixelRect av_PixelRect_from_NSScreen(NSScreen * screen) {
+	av_PixelRect rect, mainrect;
+
+	NSRect mainframe = [[NSScreen mainScreen] frame];
+	NSRect frame = [screen frame];
+
+	mainrect.x = mainframe.origin.x;
+	mainrect.y = mainframe.origin.y;
+	mainrect.w = mainframe.size.width;
+	mainrect.h = mainframe.size.height;
+	
+	rect.x = frame.origin.x;
+	rect.y = frame.origin.y;
+	rect.w = frame.size.width;
+	rect.h = frame.size.height;
+	
+	rect.y = mainrect.h - rect.y - rect.h;
+	
+	return rect;
+}
+
+int av_screens_count() {
+    return [[NSScreen screens] count];
+}
+
+av_PixelRect av_screens_index(int idx) {
+	return av_PixelRect_from_NSScreen([[NSScreen screens] objectAtIndex:(idx % av_screens_count())]);
+}
+
+av_PixelRect av_screens_deepest() {
+	return av_PixelRect_from_NSScreen([NSScreen deepestScreen]);
+}
+
+av_PixelRect av_screens_main() {
+	return av_screens_index(0);
+}
 
 
 int av_init() {
@@ -479,154 +677,4 @@ int av_run() {
     	[pool drain];
 	}
 	return 0;
-}
-
-
-av_Window * av_window_create(const char * title, int x, int y, int w, int h) {
-
-	av_WindowCocoa * avwindow = (av_WindowCocoa *)malloc(sizeof(av_WindowCocoa));
-	if (avwindow == 0) return 0;
-
-	avwindow->shift = avwindow->ctrl = avwindow->alt = avwindow->cmd = 0;
-	avwindow->autoclear = 1;
-	avwindow->draw_callback = 0;
-	avwindow->mouse_callback = 0;
-	avwindow->key_callback = 0;
-	avwindow->modifiers_callback = 0;
-
-	dim = NSMakeRect(0, 0, w, h);
-	
-	// Finally, all we need to do is create a window and activate the application:
-	window = [[[NSWindow alloc] initWithContentRect:dim
-								styleMask:NSTitledWindowMask | 								
-										  NSResizableWindowMask |
-										  NSClosableWindowMask | 
-										  NSMiniaturizableWindowMask
-								backing:NSBackingStoreBuffered 
-								defer:NO]
-			autorelease];
-	[window cascadeTopLeftFromPoint:NSMakePoint(x, y)];
-	if (title) {
-		[window setTitle:[NSString stringWithUTF8String:title]];
-	} else {
-		[window setTitle:appName];
-	}
-	
-	// and add an opengl view:
-    glview = [[AVOpenGLView alloc] initWithFrame:dim];
-    glview->avwindow = avwindow;
-    avwindow->glview = glview;
-    [window setContentView:glview];
-    // use the glview as delegate:
-	[window setDelegate: glview];
-	
-	// activate it:
-	[window makeKeyAndOrderFront:nil];
-	[NSApp activateIgnoringOtherApps:YES];
-    
-    // cache ptr in avwindow:
-    avwindow->cocoawindow = window;
-	return avwindow;
-} 
-
-int av_window_sync(av_Window * avwindow, int enable) {
-	const GLint interval = enable ? 1 : 0;
-	[[((av_WindowCocoa *)avwindow)->glview openGLContext] setValues:&interval forParameter: NSOpenGLCPSwapInterval];
-	return 0;
-}
-
-int av_window_cursor(av_Window * avwindow, int enable) {
-	static int cursorhides = 0;
-	if (enable) {
-		while (cursorhides < 0) {
-			[NSCursor unhide];
-			cursorhides++;
-		}
-	} else {
-		[NSCursor hide];
-		cursorhides--;
-	}
-	return 0;
-}
-
-/*
-	switch(style) {
-	case Window::ARROW:				[[NSCursor arrowCursor] set];				break;
-	case Window::IBEAM:				[[NSCursor IBeamCursor] set];				break;
-//	case Window::CONTEXTUAL_MENU:	[[NSCursor contextualMenuCursor] set];		break;
-	case Window::CROSSHAIR:			[[NSCursor crosshairCursor] set];			break;
-	case Window::CLOSED_HAND:		[[NSCursor closedHandCursor] set];			break;
-//	case Window::DRAG_COPY:			[[NSCursor dragCopyCursor ] set];			break;
-//	case Window::DRAG_LINK:			[[NSCursor dragLinkCursor ] set];			break;
-//	case Window::NO_OP:				[[NSCursor operationNotAllowedCursor] set];	break;
-	case Window::OPEN_HAND:			[[NSCursor openHandCursor] set];			break;
-	case Window::POINTING_HAND:		[[NSCursor pointingHandCursor] set];		break;
-	case Window::RESIZE_LEFT:		[[NSCursor resizeLeftCursor] set];			break;
-	case Window::RESIZE_RIGHT:		[[NSCursor resizeRightCursor] set];			break;
-	case Window::RESIZE_LEFTRIGHT:	[[NSCursor resizeLeftRightCursor] set];		break;
-	case Window::RESIZE_UP:			[[NSCursor resizeUpCursor] set];			break;
-	case Window::RESIZE_DOWN:		[[NSCursor resizeDownCursor] set];			break;
-	case Window::RESIZE_UPDOWN:		[[NSCursor resizeUpDownCursor] set];		break;
-	case Window::DISAPPEARING_ITEM:	[[NSCursor disappearingItemCursor] set];	break;
-	}
-}
-*/
-
-int av_window_fullscreen(av_Window * avwindow, int enable) {
-	//[((av_WindowCocoa *)avwindow)->cocoawindow setFullScreen:enable];
-	return 0;
-}
-
-int av_window_flush(av_Window * avwindow) {
-	[[((av_WindowCocoa *)avwindow)->glview openGLContext] flushBuffer];
-	return 0;
-}
-
-int av_window_destroy(av_Window * avwindow) {
-	av_WindowCocoa * window = (av_WindowCocoa *)avwindow;
-	if (window) {
-		if (window->cocoawindow) {
-			[window->cocoawindow close];
-			[window->cocoawindow release];
-		}
-		free(window);
-	}	
-	return 0;
-}
-
-av_PixelRect av_PixelRect_from_NSScreen(NSScreen * screen) {
-	av_PixelRect rect, mainrect;
-
-	NSRect mainframe = [[NSScreen mainScreen] frame];
-	NSRect frame = [screen frame];
-
-	mainrect.x = mainframe.origin.x;
-	mainrect.y = mainframe.origin.y;
-	mainrect.w = mainframe.size.width;
-	mainrect.h = mainframe.size.height;
-	
-	rect.x = frame.origin.x;
-	rect.y = frame.origin.y;
-	rect.w = frame.size.width;
-	rect.h = frame.size.height;
-	
-	rect.y = mainrect.h - rect.y - rect.h;
-	
-	return rect;
-}
-
-int av_screens_count() {
-    return [[NSScreen screens] count];
-}
-
-av_PixelRect av_screens_index(int idx) {
-	return av_PixelRect_from_NSScreen([[NSScreen screens] objectAtIndex:(idx % av_screens_count())]);
-}
-
-av_PixelRect av_screens_deepest() {
-	return av_PixelRect_from_NSScreen([NSScreen deepestScreen]);
-}
-
-av_PixelRect av_screens_main() {
-	return av_screens_index(0);
 }
