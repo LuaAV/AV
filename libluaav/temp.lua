@@ -76,6 +76,9 @@ function Window(title, w, h, x, y)
 	win.draw_callback = function(self, dt)
 		--print("fps", 1/dt)
 		--print("draw", self)
+		if math.random() < 0.01 then
+			win:fullscreen(math.random() < 0.5)
+		end
 	end
 	win.mouse_callback = function(self, event, btn, x, y, dx, dy)
 		event = eventnames[event]
@@ -108,7 +111,6 @@ local win = Window()
 
 print(win)
 
-win:fullscreen(true)
 
 print(av.time())
 --av.sleep(1) print(av.time())

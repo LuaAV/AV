@@ -466,9 +466,6 @@ float rot = 0.;
 @end
 
 void av_WindowCocoa::open() {
-	// close any existing window
-	close();
-
 	// get new extents
 	NSRect nsdim;
 	if (isfullscreen) {
@@ -477,6 +474,9 @@ void av_WindowCocoa::open() {
 	} else {
 		nsdim = NSMakeRect(dim.x, dim.y, dim.w, dim.h);
 	}
+	
+	// close existing window
+	close();
 	
 	// create & configure NSWindow:
 	if (isfullscreen) {
@@ -502,9 +502,12 @@ void av_WindowCocoa::open() {
 	}
 	[window setOpaque:YES];
 	
-	// and add an opengl view:
-    glview = [[AVOpenGLView alloc] initWithFrame:nsdim];
-    glview->avwindow = this;
+	if (glview) {
+	
+	} else {
+		glview = [[AVOpenGLView alloc] initWithFrame:nsdim];
+    	glview->avwindow = this;
+    }
     [window setContentView:glview];
     // using the glview as delegate:
 	[window setDelegate: glview];
