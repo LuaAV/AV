@@ -4420,7 +4420,7 @@ end
 
 function gl.Color(r, g, b, a)
 	if type(r) == "table" then r, g, b, a = unpack(r) end
-	libgl.Color4f(r or 0, g or 0, b or 0, a or 1)
+	lib.glColor4f(r or 0, g or 0, b or 0, a or 1)
 end
 
 function gl.ColorMask(r, g, b, a)
@@ -4451,7 +4451,7 @@ end
 
 function gl.Normal(x, y, z)
 	if type(x) == "table" then x, y, z = unpack(x) end
-	libgl.Normal3d(x, y, z)
+	lib.glNormal3d(x, y, z)
 end
 
 function gl.PixelStore(p, v) gl.PixelStoref(p, v) end
@@ -4472,11 +4472,11 @@ end
 function gl.TexCoord(x, y, z, w)
 	if type(x) == "table" then x, y, z, w = unpack(x) end
 	if w then
-		libgl.TexCoord4d(x, y, z, w)
+		lib.glTexCoord4d(x, y, z, w)
 	elseif z then
-		libgl.TexCoord3d(x, y, z)
+		lib.glTexCoord3d(x, y, z)
 	elseif y then
-		libgl.TexCoord2d(x, y)
+		lib.glTexCoord2d(x, y)
 	else
 		error("gl.Vertex: invalid arguments")
 	end
@@ -4492,11 +4492,11 @@ function gl.Vertex(x, y, z, w)
 		x, y, z, w = x:unpack()
 	elseif type(x) == "table" then x, y, z, w = unpack(x) end
 	if w then
-		libgl.Vertex4d(x, y, z, w)
+		lib.glVertex4d(x, y, z, w)
 	elseif z then
-		libgl.Vertex3d(x, y, z)
+		lib.glVertex3d(x, y, z)
 	elseif y then
-		libgl.Vertex2d(x, y)
+		lib.glVertex2d(x, y)
 	else
 		error("gl.Vertex: invalid arguments")
 	end
@@ -4536,7 +4536,7 @@ end
 function gl.GenFramebuffers(n) 
 	n = n or 1
 	local arr = ffi.new("GLuint[?]", n)
-	libgl.GenFramebuffers(n, arr)
+	lib.glGenFramebuffers(n, arr)
 	local res = {}
 	for i = 1, n do res[i] = arr[i-1] end
 	return unpack(res)
@@ -4547,13 +4547,13 @@ function gl.DeleteFramebuffers(...)
 	local n = #t
 	local arr = ffi.new("GLuint[?]", n)
 	for i = 1, n do arr[i-1] = t[i] end
-	libgl.DeleteFramebuffers(n, arr)
+	lib.glDeleteFramebuffers(n, arr)
 end
 
 function gl.GenRenderbuffers(n) 
 	n = n or 1
 	local arr = ffi.new("GLuint[?]", n)
-	libgl.GenRenderbuffers(n, arr)
+	lib.glGenRenderbuffers(n, arr)
 	local res = {}
 	for i = 1, n do res[i] = arr[i-1] end
 	return unpack(res)
@@ -4564,13 +4564,13 @@ function gl.DeleteRenderbuffers(...)
 	local n = #t
 	local arr = ffi.new("GLuint[?]", n)
 	for i = 1, n do arr[i-1] = t[i] end
-	libgl.DeleteRenderbuffers(n, arr)
+	lib.glDeleteRenderbuffers(n, arr)
 end
 
 function gl.GenBuffers(n) 
 	n = n or 1
 	local arr = ffi.new("GLuint[?]", n)
-	libgl.GenBuffers(n, arr)
+	lib.glGenBuffers(n, arr)
 	local res = {}
 	for i = 1, n do res[i] = arr[i-1] end
 	return unpack(res)
@@ -4579,7 +4579,7 @@ end
 function gl.GenTextures(n) 
 	n = n or 1
 	local arr = ffi.new("GLuint[?]", n)
-	libgl.GenTextures(n, arr)
+	lib.glGenTextures(n, arr)
 	local res = {}
 	for i = 1, n do res[i] = arr[i-1] end
 	return unpack(res)
@@ -4590,7 +4590,7 @@ function gl.DeleteTextures(...)
 	local n = #t
 	local arr = ffi.new("GLuint[?]", n)
 	for i = 1, n do arr[i-1] = t[i] end
-	libgl.DeleteTextures(n, arr)
+	lib.glDeleteTextures(n, arr)
 end
 
 function gl.Shader(kind, code)

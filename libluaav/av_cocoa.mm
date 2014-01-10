@@ -4,7 +4,9 @@
 /*
 	One goal here is to see if we can drive a Cocoa mainloop from the Lua command line. That implies: no app, no nib, no Info.plist etc. The script must create the NSApp, the menubar, window, handle events etc. all from within a dylib.
 	
-	It could be interesting to see if the runloop could be driven from Lua too, rather than from [NSApp run]. Ultimately, on the command line, a script will need to end with av.run() to prevent it simply terminating. (If the script was loaded from within av or av.app etc, then we are already inside NSApp run when the script starts, so av.run() is not necessary and should become a no-op.) However it may also be beneficial to manually drive the runloop from Lua (in av.run) in order to get better performance from LuaJIT (since callbacks are NYI for JIT), and to integrate it with other event loops.
+	It is also useful to have the runloop driven from Lua too, rather than from [NSApp run], in order to get better performance from LuaJIT (since callbacks are NYI for JIT), and to integrate it with other event loops.
+	
+	Ultimately, on the command line, a script will need to end with av.run() to prevent it simply terminating. (If the script was loaded from within av or av.app etc, then we are already inside NSApp run when the script starts, so av.run() is not necessary and should become a no-op.) 
 */
 
 // @see http://www.cocoawithlove.com/2010/09/minimalist-cocoa-programming.html		
@@ -419,18 +421,6 @@ float rot = 0.;
 		} 
 		if (AVWindow->draw_callback) AVWindow->draw_callback(AVWindow, dt);
 		
-		// enter user code here
-		glLoadIdentity();
-		glRotatef(rot,1,0,0);
-
-		glBegin(GL_TRIANGLES);
-		{
-			glColor3f(1,0,0); glVertex3f(0,0.6,0);
-			glColor3f(0,1,0); glVertex3f(-0.2,-0.3,0);
-			glColor3f(0,0,1); glVertex3f(0.2,0.3,0);
-		}
-		glEnd();
-		rot+=dt*60.;
 	
 		//glFlush();
 		[[self openGLContext] flushBuffer];
