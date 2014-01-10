@@ -1,6 +1,10 @@
 /* deal with different browser css defaults by reseting here */
 @import url("reset.css");
 
+html {
+	height: 100%;
+}
+
 body {
 	/*background: #111 url("img/an_background_01.jpg") no-repeat fixed top left; #eee*/	
 	padding: 0;
@@ -87,4 +91,20 @@ nav li a:hover {
 	padding: 10px; 
  	text-decoration: none;
  	border: 0px;
+}
+
+#main {
+}
+
+footer {
+
+	height: 40px;
+	width: 720px;
+	
+	padding-top: 15px;
+	border-top: 1px dotted #444;
+	
+	font-size: .8em;
+	
+	background: #eee;
 }
