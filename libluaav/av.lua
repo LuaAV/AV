@@ -32,13 +32,5 @@ local av = {
 
 av.init()
 
-local Window = require "av.window"
-
-print(lib.av_screens_count(), "screens found")
-local dim = lib.av_screens_main()
-print(dim.x, dim.y, dim.w, dim.h)
-
-print("initialized")
-
 
 return av

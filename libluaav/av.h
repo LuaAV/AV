@@ -44,12 +44,39 @@ typedef struct av_Window {
 	void (*modifiers_callback)(struct av_Window * self, AV_EVENT event, AV_MODIFIERS key);
 } av_Window;
 
+typedef struct av_Audio {
+	unsigned int blocksize;
+	unsigned int frames;	
+	unsigned int indevice, outdevice;
+	unsigned int inchannels, outchannels;		
+	
+	double time;					// in seconds
+	double samplerate;				// in samples
+	double latency_seconds;			// in seconds
+	
+	// a big buffer for main-thread audio generation
+	float * buffer;
+	float * inbuffer;
+	
+	int blocks, blockread, blockwrite, blockstep;
+	int block_io_latency, dummy;
+	
+	// only access from audio thread:
+	float * input;
+	float * output;	
+	void (*onframes)(struct av_Audio * self, double sampletime, float * inputs, float * outputs, int frames);
+	
+} av_Audio;
+
 int av_init();
 int av_run();
 int av_run_once(int blocking);
 
 double av_time();
 void av_sleep(double seconds);
+
+av_Audio * av_audio_get();
+void av_audio_start();
 
 av_Window * av_window_create(const char * title, int x, int y, int w, int h);
 int av_window_flush(av_Window * avwindow);

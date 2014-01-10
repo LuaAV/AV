@@ -2,6 +2,7 @@
 
 local av = require "av"
 local Window = require "av.window"
+local audio = require "av.audio"
 
 local gl = require "gl"
 local draw2D = require "draw2D"
