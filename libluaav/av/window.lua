@@ -14,12 +14,8 @@ Window({
 __gc
 __index/__newindex => attrs
 
-Window:close()
-Window:flush()
-
 attrs:
 title
-autoclear
 clearcolor
 origin
 dim
@@ -33,25 +29,7 @@ grow
 mousemove
 cursor
 cursorstyle
-shift
-ctrl
-alt
-cmd
 
-callbacks:
-create
-init
-closing
-resize
-draw
-mouse
-scroll
-modifiers
-key
-copy
-cut
-paste
-selectall
 
 
 --]]
