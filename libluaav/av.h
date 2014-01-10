@@ -36,7 +36,9 @@ typedef struct av_Window {
 	
 	char * title;
 
+	void (*create_callback)(struct av_Window * self);
 	void (*draw_callback)(struct av_Window * self, double dt);
+	void (*resize_callback)(struct av_Window * self, int w, int h);
 	void (*mouse_callback)(struct av_Window * self, AV_EVENT event, int btn, int x, int y, int dx, int dy);
 	void (*key_callback)(struct av_Window * self, AV_EVENT event, int key);
 	void (*modifiers_callback)(struct av_Window * self, AV_EVENT event, AV_MODIFIERS key);

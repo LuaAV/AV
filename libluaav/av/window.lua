@@ -1,5 +1,60 @@
 local ffi = require "ffi"
 local lib = require "av.core"
+local gl = require "gl"
+
+--[[
+
+Window(title, x, y, w, h)
+Window({
+	title, 
+	origin = vec2,
+	dim = vec2, 	
+})
+
+__gc
+__index/__newindex => attrs
+
+Window:close()
+Window:flush()
+
+attrs:
+title
+autoclear
+clearcolor
+origin
+dim
+fps
+sync
+fullscreen
+floating
+stereo
+border
+grow
+mousemove
+cursor
+cursorstyle
+shift
+ctrl
+alt
+cmd
+
+callbacks:
+create
+init
+closing
+resize
+draw
+mouse
+scroll
+modifiers
+key
+copy
+cut
+paste
+selectall
+
+
+--]]
 
 local debug_traceback = debug.traceback
 
@@ -20,6 +75,10 @@ local modifiernames = {
 	[lib.AV_MODIFIERS_CMD] = "cmd",
 }
 
+local default_create_callback = function(self)
+	gl.context_changed()
+end
+local default_resize_callback = function(self, w, h) end
 local default_draw_callback = function(self, dt) end
 local default_mouse_callback = function(self, event, btn, x, y, dx, dy) end
 local default_key_callback = function(self, event, key) 
@@ -35,9 +94,20 @@ ffi.metatype("av_Window", {
 		cursor = lib.av_window_cursor,
 		fullscreen = lib.av_window_fullscreen,
 		flush = lib.av_window_flush,
+		close = lib.av_window_destroy,
 	},
 	__newindex = function(self, k, v)		
-		if k == "draw" then
+		if k == "resize" then
+			self.resize_callback:set(function(self, w, h)
+				local ok, err = xpcall(function()
+					v(self, w, h)
+				end, debug_traceback)
+				if not ok then
+					print(err)
+					self.resize_callback:set(default_resize_callback)
+				end
+			end)
+		elseif k == "draw" then
 			self.draw_callback:set(function(self, dt)
 				local ok, err = xpcall(function()
 					v(self, dt)
@@ -82,6 +152,17 @@ ffi.metatype("av_Window", {
 					self.modifiers_callback:set(default_modifiers_callback)
 				end
 			end)
+		elseif k == "create" then
+			self.create_callback:set(function(self)
+				gl.context_changed()
+				local ok, err = xpcall(function()
+					v(self)
+				end, debug_traceback)
+				if not ok then
+					print(err)
+					self.create_callback:set(default_create_callback)
+				end
+			end)
 		else
 			print("attempt to assign invalid key to window", k)
 		end	
@@ -111,6 +192,8 @@ function Window(title, w, h, x, y)
 		lib.av_window_destroy(self)
 	end)
 	-- install system callbacks:
+	win.create_callback = default_create_callback
+	win.resize_callback = default_resize_callback
 	win.draw_callback = default_draw_callback
 	win.mouse_callback = default_mouse_callback
 	win.key_callback = default_key_callback

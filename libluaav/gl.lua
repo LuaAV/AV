@@ -4749,6 +4749,21 @@ function sketch.quad(x, y, w, h)
 	gl.End()
 end
 
+-- a set of opengl objects that require rebuilding when the context is rebuilt
+local globjects = {}
+-- weak-keyed in order to allow objects to be garbage collected
+setmetatable(globjects, { __mode = 'k' })
+
+function gl.context_register(o)
+	globjects[o] = true
+end
+
+function gl.context_changed()
+	for o in pairs(globjects) do
+		o:destroy()
+		o:create()
+	end
+end
 
 gl.extensions_table = false
 function gl.extensions()

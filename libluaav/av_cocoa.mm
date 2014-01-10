@@ -50,6 +50,8 @@ typedef struct av_WindowCocoa : public av_Window {
 	
 		shift = ctrl = alt = cmd = 0;
 		autoclear = 1;
+		create_callback = 0;
+		resize_callback = 0;
 		draw_callback = 0;
 		mouse_callback = 0;
 		key_callback = 0;
@@ -384,19 +386,14 @@ https://developer.apple.com/library/mac/documentation/cocoa/Reference/Applicatio
 
 - (void)reshape {
 	[super reshape];
-	
-	
-	NSLog(@"reshape view %d", self->idx);
-	
-	NSRect dim = [[[self window] contentView] bounds];
-	
-	
-	//dim.origin.x, dim.origin.y, dim.size.width, dim.size.height
-	
+	if (AVWindow && AVWindow->resize_callback) {
+		NSRect dim = [[[self window] contentView] bounds];
+		AVWindow->resize_callback(AVWindow, dim.size.width, dim.size.height);
+	}
 }
 
 - (void)update {
-	NSLog(@"update");
+	//NSLog(@"update");
 	[super update];
 }
 
@@ -439,6 +436,7 @@ float rot = 0.;
     //CGLLockContext(self.openGLContext.CGLContextObj);
 
     // all opengl prep goes here
+	if (AVWindow && AVWindow->create_callback) AVWindow->create_callback(AVWindow);
 
     //CGLUnlockContext(self.openGLContext.CGLContextObj);
 }
@@ -696,14 +694,6 @@ int av_init() {
 	return 0;
 }
 
-// block until another event is ready:
-int av_run_waitevent() {
-	NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-	//NSEvent * event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantFuture] inMode:NSDefaultRunLoopMode dequeue:NO];
-	[pool release];
-	return 0;
-}
-
 // clear the current event queue:
 int av_run_once(int blocking) {
 	// We need to handle the autorelease pool
@@ -744,8 +734,7 @@ int av_run() {
 
     if (!running && av_init() == 0) {
     	running = true;
- 	   	//[app run];
- 	   	//[pool drain];
+ 	   	//[app run]; [pool drain];
  	   	// @see http://stackoverflow.com/questions/6732400/cocoa-integrate-nsapplication-into-an-existing-c-mainloop
  	   	// @see http://www.cocoawithlove.com/2009/01/demystifying-nsapplication-by.html
  	   	while (running) {
