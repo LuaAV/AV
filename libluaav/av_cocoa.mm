@@ -12,19 +12,32 @@
 
 #include "av.hpp"
 
+static int nextid = 0;
+
 struct av_WindowCocoa;
+
+// this is rather ridiculous; you need to subclass NSWindow to implement 
+// canBecomeKeyWindow() in order that a fullscreen window can receive key events!
+@interface AVWindow : NSWindow {
+}
+@end
+@implementation AVWindow : NSWindow
+- (BOOL)canBecomeKeyWindow { return YES; }
+@end
+
 
 @interface AVOpenGLView : NSOpenGLView <NSWindowDelegate> {
 @public
 	NSTimer * timer;
-	av_WindowCocoa * avwindow;
+	av_WindowCocoa * AVWindow;
 	double t;
+	int idx;
 }
 -(void) animate : (NSTimer *) timer;
 @end
 
 typedef struct av_WindowCocoa : public av_Window {
-	NSWindow * window;
+	AVWindow * window;
 	AVOpenGLView * glview;
 	
 	av_WindowCocoa(const char * title, int x, int y, int w, int h) {
@@ -76,9 +89,6 @@ static id appName;
 static NSApplication * app = 0;
 static AVAppDelegate * appDelegate = 0;
 
-static NSWindow * window = 0;
-static AVOpenGLView * glview = 0;
-static NSRect dim;
 
 @implementation AVOpenGLView : NSOpenGLView
 - (id) initWithFrame:(NSRect)frameRect {
@@ -111,11 +121,14 @@ static NSRect dim;
 			userInfo:nil
 			repeats:YES];
 	self->t = av_time();
+	self->idx = nextid++;
+	
+	NSLog(@"created view %d", self->idx);
 
 	[[NSRunLoop currentRunLoop] addTimer:self->timer forMode:NSDefaultRunLoopMode];
 	[[NSRunLoop currentRunLoop] addTimer:self->timer forMode:NSEventTrackingRunLoopMode];
 	
-	self->avwindow = 0;
+	self->AVWindow = 0;
 	
 	return self;
 }
@@ -128,20 +141,27 @@ static NSRect dim;
     return YES;
 }
 
+- (BOOL)canBecomeKeyWindow
+{
+    return YES;
+}
+
+
 - (BOOL)isOpaque
 {
     return YES;
 }
 
 -(void) animate : (NSTimer *) timer {
+	//printf("%d\n", self->idx);
 	[self setNeedsDisplay: YES];
 }
 
 - (void)mouseDown:(NSEvent *)theEvent {
 	//NSLog(@"mouseDown");// determine if I handle theEvent
-    if (avwindow) {
+    if (AVWindow) {
 		NSPoint event_location = [theEvent locationInWindow];
-   		avwindow->mouse_callback(avwindow, AV_EVENT_MOUSEDOWN, avwindow->ctrl, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
+   		AVWindow->mouse_callback(AVWindow, AV_EVENT_MOUSEDOWN, AVWindow->ctrl, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
 		//NSUInteger mod = [theEvent modifierFlags];
 		// [theEvent modifierFlags] & NSCommandKeyMask //NSShiftKeyMask NSAlphaShiftKeyMask
 		//NSWindow * window = [theEvent window];
@@ -154,89 +174,89 @@ static NSRect dim;
 
 - (void)mouseDragged:(NSEvent *)theEvent {
     //NSLog(@"mouseDrag");// determine if I handle theEvent
-    if (avwindow) {
+    if (AVWindow) {
 		NSPoint event_location = [theEvent locationInWindow];
-   		avwindow->mouse_callback(avwindow, AV_EVENT_MOUSEDRAG, avwindow->ctrl, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
+   		AVWindow->mouse_callback(AVWindow, AV_EVENT_MOUSEDRAG, AVWindow->ctrl, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
 	}
 }
 
 - (void)mouseUp:(NSEvent *)theEvent {
     //NSLog(@"mouseUp");// determine if I handle theEvent
-    if (avwindow) {
+    if (AVWindow) {
 		NSPoint event_location = [theEvent locationInWindow];
-   		avwindow->mouse_callback(avwindow, AV_EVENT_MOUSEUP, avwindow->ctrl, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
+   		AVWindow->mouse_callback(AVWindow, AV_EVENT_MOUSEUP, AVWindow->ctrl, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
 	}
 }
 
 - (void)mouseMoved:(NSEvent *)theEvent {
    	//NSLog(@"mouseMoved");// determine if I handle theEvent
-    if (avwindow) {
+    if (AVWindow) {
 		NSPoint event_location = [theEvent locationInWindow];
-   		avwindow->mouse_callback(avwindow, AV_EVENT_MOUSEMOVE, avwindow->ctrl, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
+   		AVWindow->mouse_callback(AVWindow, AV_EVENT_MOUSEMOVE, AVWindow->ctrl, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
 	}
 }
 
 - (void)rightMouseDown:(NSEvent *)theEvent {
     NSLog(@"rightMouseDown");// determine if I handle theEvent
-    if (avwindow) {
+    if (AVWindow) {
 		NSPoint event_location = [theEvent locationInWindow];
-   		avwindow->mouse_callback(avwindow, AV_EVENT_MOUSEDOWN, 1, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
+   		AVWindow->mouse_callback(AVWindow, AV_EVENT_MOUSEDOWN, 1, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
 	}
 }
 
 - (void)rightMouseDragged:(NSEvent *)theEvent {
     //NSLog(@"mouseDrag");// determine if I handle theEvent
-    if (avwindow) {
+    if (AVWindow) {
 		NSPoint event_location = [theEvent locationInWindow];
-   		avwindow->mouse_callback(avwindow, AV_EVENT_MOUSEDRAG, 1, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
+   		AVWindow->mouse_callback(AVWindow, AV_EVENT_MOUSEDRAG, 1, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
 	}
 }
 
 - (void)rightMouseUp:(NSEvent *)theEvent {
     //NSLog(@"mouseUp");// determine if I handle theEvent
-    if (avwindow) {
+    if (AVWindow) {
 		NSPoint event_location = [theEvent locationInWindow];
-   		avwindow->mouse_callback(avwindow, AV_EVENT_MOUSEUP, 1, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
+   		AVWindow->mouse_callback(AVWindow, AV_EVENT_MOUSEUP, 1, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
 	}
 }
 
 - (void)rightMouseMoved:(NSEvent *)theEvent {
    	//NSLog(@"mouseMoved");// determine if I handle theEvent
-    if (avwindow) {
+    if (AVWindow) {
 		NSPoint event_location = [theEvent locationInWindow];
-   		avwindow->mouse_callback(avwindow, AV_EVENT_MOUSEMOVE, 1, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
+   		AVWindow->mouse_callback(AVWindow, AV_EVENT_MOUSEMOVE, 1, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
 	}
 }
 
 - (void)otherMouseDown:(NSEvent *)theEvent {
     NSLog(@"rightMouseDown");// determine if I handle theEvent
-    if (avwindow) {
+    if (AVWindow) {
 		NSPoint event_location = [theEvent locationInWindow];
-   		avwindow->mouse_callback(avwindow, AV_EVENT_MOUSEDOWN, 2, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
+   		AVWindow->mouse_callback(AVWindow, AV_EVENT_MOUSEDOWN, 2, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
 	}
 }
 
 - (void)otherMouseDragged:(NSEvent *)theEvent {
     //NSLog(@"mouseDrag");// determine if I handle theEvent
-    if (avwindow) {
+    if (AVWindow) {
 		NSPoint event_location = [theEvent locationInWindow];
-   		avwindow->mouse_callback(avwindow, AV_EVENT_MOUSEDRAG, 2, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
+   		AVWindow->mouse_callback(AVWindow, AV_EVENT_MOUSEDRAG, 2, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
 	}
 }
 
 - (void)otherMouseUp:(NSEvent *)theEvent {
     //NSLog(@"mouseUp");// determine if I handle theEvent
-    if (avwindow) {
+    if (AVWindow) {
 		NSPoint event_location = [theEvent locationInWindow];
-   		avwindow->mouse_callback(avwindow, AV_EVENT_MOUSEUP, 2, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
+   		AVWindow->mouse_callback(AVWindow, AV_EVENT_MOUSEUP, 2, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
 	}
 }
 
 - (void)otherMouseMoved:(NSEvent *)theEvent {
    	//NSLog(@"mouseMoved");// determine if I handle theEvent
-    if (avwindow) {
+    if (AVWindow) {
 		NSPoint event_location = [theEvent locationInWindow];
-   		avwindow->mouse_callback(avwindow, AV_EVENT_MOUSEMOVE, 2, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
+   		AVWindow->mouse_callback(AVWindow, AV_EVENT_MOUSEMOVE, 2, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
 	}
 }
 
@@ -261,17 +281,17 @@ static NSRect dim;
 
 - (void)scrollWheel:(NSEvent *)theEvent {
 	//NSLog(@"scrollWheel");
-	if (avwindow) {
+	if (AVWindow) {
 		NSPoint event_location = [theEvent locationInWindow];
-		avwindow->mouse_callback(avwindow, AV_EVENT_MOUSESCROLL, 0, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
+		AVWindow->mouse_callback(AVWindow, AV_EVENT_MOUSESCROLL, 0, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
 	}
 }
 
 - (void)keyDown:(NSEvent *)theEvent {
     //NSLog(@"keyDown");// determine if I handle theEvent
-    if (avwindow) {
+    if (AVWindow) {
 		NSString * characters = [theEvent charactersIgnoringModifiers]; 
-		avwindow->key_callback(avwindow, AV_EVENT_KEYDOWN, [characters characterAtIndex:0]);
+		AVWindow->key_callback(AVWindow, AV_EVENT_KEYDOWN, [characters characterAtIndex:0]);
 	}
     // pass key events up the hierarchy:
     [[self nextResponder] keyDown:theEvent];
@@ -279,18 +299,18 @@ static NSRect dim;
 
 - (void)keyUp:(NSEvent *)theEvent {
     //NSLog(@"keyUp");// determine if I handle theEvent
-    if (avwindow) {
+    if (AVWindow) {
 		NSString * characters = [theEvent charactersIgnoringModifiers]; 
-		avwindow->key_callback(avwindow, AV_EVENT_KEYUP, [characters characterAtIndex:0]);
+		AVWindow->key_callback(AVWindow, AV_EVENT_KEYUP, [characters characterAtIndex:0]);
 	}
     // pass key events up the hierarchy:
-    [[self nextResponder] keyDown:theEvent];
+    [[self nextResponder] keyUp:theEvent];
 }
 
 // modifiers only
 - (void)flagsChanged:(NSEvent *)theEvent {
     //NSLog(@"flagsChanged");// determine if I handle theEvent
-    if (avwindow) {
+    if (AVWindow) {
     	NSUInteger modifierFlags = [theEvent modifierFlags];
     	
     	bool shift = (modifierFlags & NSShiftKeyMask) ? true : false;
@@ -298,25 +318,27 @@ static NSRect dim;
 		bool alt = (modifierFlags & NSAlternateKeyMask) ? true : false;
 		bool cmd = (modifierFlags & NSCommandKeyMask) ? true : false;
 		
-    	if (shift != avwindow->shift) {
-    		avwindow->shift = shift;
-    		avwindow->modifiers_callback(avwindow, shift ? AV_EVENT_KEYDOWN : AV_EVENT_KEYUP, AV_MODIFIERS_SHIFT);
+    	if (shift != AVWindow->shift) {
+    		AVWindow->shift = shift;
+    		AVWindow->modifiers_callback(AVWindow, shift ? AV_EVENT_KEYDOWN : AV_EVENT_KEYUP, AV_MODIFIERS_SHIFT);
     	}
-    	if (ctrl != avwindow->ctrl) {
-    		avwindow->ctrl = ctrl;
-    		avwindow->modifiers_callback(avwindow, ctrl ? AV_EVENT_KEYDOWN : AV_EVENT_KEYUP, AV_MODIFIERS_CTRL);
+    	if (ctrl != AVWindow->ctrl) {
+    		AVWindow->ctrl = ctrl;
+    		AVWindow->modifiers_callback(AVWindow, ctrl ? AV_EVENT_KEYDOWN : AV_EVENT_KEYUP, AV_MODIFIERS_CTRL);
     	}
-    	if (alt != avwindow->alt) {
-    		avwindow->alt = alt;
-    		avwindow->modifiers_callback(avwindow, alt ? AV_EVENT_KEYDOWN : AV_EVENT_KEYUP, AV_MODIFIERS_ALT);
+    	if (alt != AVWindow->alt) {
+    		AVWindow->alt = alt;
+    		AVWindow->modifiers_callback(AVWindow, alt ? AV_EVENT_KEYDOWN : AV_EVENT_KEYUP, AV_MODIFIERS_ALT);
     	}
-    	if (cmd != avwindow->cmd) {
-    		avwindow->cmd = cmd;
-    		avwindow->modifiers_callback(avwindow, cmd ? AV_EVENT_KEYDOWN : AV_EVENT_KEYUP, AV_MODIFIERS_CMD);
+    	if (cmd != AVWindow->cmd) {
+    		AVWindow->cmd = cmd;
+    		AVWindow->modifiers_callback(AVWindow, cmd ? AV_EVENT_KEYDOWN : AV_EVENT_KEYUP, AV_MODIFIERS_CMD);
     	}
     	
     	//NSShiftKeyMask NSAlphaShiftKeyMask
     }
+    // pass key events up the hierarchy:
+    [[self nextResponder] flagsChanged:theEvent];
 }
 
 /*
@@ -361,16 +383,14 @@ https://developer.apple.com/library/mac/documentation/cocoa/Reference/Applicatio
 - (void)reshape {
 	[super reshape];
 	
-	dim = [[[self window] contentView] bounds];
+	
+	NSLog(@"reshape view %d", self->idx);
+	
+	NSRect dim = [[[self window] contentView] bounds];
+	
 	
 	//dim.origin.x, dim.origin.y, dim.size.width, dim.size.height
-	[[self openGLContext] makeCurrentContext];
-	NSLog(@"reshape");
-	//CGLLockContext(self.openGLContext.CGLContextObj);
-
-    // standard opengl reshape stuff goes here.
-
-    //CGLUnlockContext(self.openGLContext.CGLContextObj);
+	
 }
 
 - (void)update {
@@ -380,23 +400,24 @@ https://developer.apple.com/library/mac/documentation/cocoa/Reference/Applicatio
 
 float rot = 0.;
 - (void)drawRect:(NSRect)bounds {
-	//NSLog(@"drawRect %p", self->avwindow);
+	//NSLog(@"drawRect %p", self->AVWindow);
 	double t1 = av_time();
 	double dt = t1 - t;
 	t = t1;
 	
-	if (avwindow) {
+	if (AVWindow) {
 		[[self openGLContext] makeCurrentContext];
 		
 		//CGLLockContext(self.openGLContext.CGLContextObj);
 	
 		// now call our global window draw...
+		NSRect dim = [[[self window] contentView] bounds];
 		glViewport(0, 0, dim.size.width, dim.size.height);
-		if (avwindow->autoclear) {
+		if (AVWindow->autoclear) {
 			glClearColor(0, 0, 0, 1);
 			glClear(GL_COLOR_BUFFER_BIT);		
 		} 
-		if (avwindow->draw_callback) avwindow->draw_callback(avwindow, dt);
+		if (AVWindow->draw_callback) AVWindow->draw_callback(AVWindow, dt);
 		
 		// enter user code here
 		glLoadIdentity();
@@ -409,7 +430,7 @@ float rot = 0.;
 			glColor3f(0,0,1); glVertex3f(0.2,0.3,0);
 		}
 		glEnd();
-		rot++;
+		rot+=dt*60.;
 	
 		//glFlush();
 		[[self openGLContext] flushBuffer];
@@ -437,6 +458,8 @@ float rot = 0.;
 
 -(void)windowWillClose:(NSNotification *)note {
 	NSLog(@"windowWillClose");
+	[timer invalidate];
+	[timer release];
 }
 
 @end
@@ -456,12 +479,22 @@ float rot = 0.;
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
 	// Insert code here to initialize your application 
 	NSLog(@"did finish launching");
+	// this is the right moment to bring our application into focus:
+	[app activateIgnoringOtherApps:YES];
 }
 
 - (BOOL)application:(NSApplication *)sender openFile:(NSString *) fileName {
     NSLog(@"File dragged on: %@", fileName);
     //av_dofile([fileName UTF8String]);
     return 1;
+}
+
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender{
+    return NSTerminateNow;
+}
+
+- (void)terminate:(id)sender{
+    running = 0;
 }
 @end
 
@@ -478,48 +511,46 @@ void av_WindowCocoa::open() {
 	// close existing window
 	close();
 	
+	NSLog(@"making new window");
+	
 	// create & configure NSWindow:
 	if (isfullscreen) {
-		window = [[[NSWindow alloc]	initWithContentRect:nsdim 
+		window = [[AVWindow alloc]	initWithContentRect:nsdim 
 									styleMask:NSBorderlessWindowMask 
 									backing:NSBackingStoreBuffered 
-									defer:YES]
-								autorelease];
-		[window setHidesOnDeactivate:YES];
+									defer:YES];
+		//[window setHidesOnDeactivate:YES];
 		// set window to be above menu bar
 		[window setLevel:NSMainMenuWindowLevel+1];
 	} else {
-		window = [[[NSWindow alloc]	initWithContentRect:nsdim
+		window = [[AVWindow alloc]	initWithContentRect:nsdim
 									styleMask:NSTitledWindowMask | 								
 											  NSResizableWindowMask |
 											  NSClosableWindowMask | 
 											  NSMiniaturizableWindowMask
 									backing:NSBackingStoreBuffered 
-									defer:NO]
-							autorelease];
+									defer:NO];
 		[window setTitle:[NSString stringWithUTF8String:title]];
-		[window cascadeTopLeftFromPoint:NSMakePoint(dim.x, dim.y)];	
+		// rather annoyingly can't position the window accurately because of menubar. this is a hack to get us near.
+		[window cascadeTopLeftFromPoint:NSMakePoint(0, 1)];	
 	}
 	[window setOpaque:YES];
 	
-	if (glview) {
-	
-	} else {
-		glview = [[AVOpenGLView alloc] initWithFrame:nsdim];
-    	glview->avwindow = this;
-    }
+	glview = [[AVOpenGLView alloc] initWithFrame:nsdim];
+	glview->AVWindow = this;
+    
     [window setContentView:glview];
     // using the glview as delegate:
 	[window setDelegate: glview];
+	[window makeFirstResponder: glview];
 	
 	// activate it:
-	[window makeKeyAndOrderFront:nil];
+	[window makeKeyAndOrderFront:window];
 }
 
 void av_WindowCocoa::close() {
 	if (window) {
 		[window close];
-		[window release];
 	}
 }
 
@@ -531,26 +562,26 @@ av_Window * av_window_create(const char * title, int x, int y, int w, int h) {
 		title = [appName UTF8String];
 	}
 
-	av_WindowCocoa * avwindow = new av_WindowCocoa(title, x, y, w, h);
+	av_WindowCocoa * AVWindow = new av_WindowCocoa(title, x, y, w, h);
 	
-	avwindow->open();
+	AVWindow->open();
 	
-	return avwindow;
+	return AVWindow;
 } 
 
-int av_window_fullscreen(av_Window * avwindow, int enable) {
-	((av_WindowCocoa *)avwindow)->isfullscreen = enable;
-	((av_WindowCocoa *)avwindow)->open();
+int av_window_fullscreen(av_Window * AVWindow, int enable) {
+	((av_WindowCocoa *)AVWindow)->isfullscreen = enable;
+	((av_WindowCocoa *)AVWindow)->open();
 	return 0;
 }
 
-int av_window_sync(av_Window * avwindow, int enable) {
+int av_window_sync(av_Window * AVWindow, int enable) {
 	const GLint interval = enable ? 1 : 0;
-	[[((av_WindowCocoa *)avwindow)->glview openGLContext] setValues:&interval forParameter: NSOpenGLCPSwapInterval];
+	[[((av_WindowCocoa *)AVWindow)->glview openGLContext] setValues:&interval forParameter: NSOpenGLCPSwapInterval];
 	return 0;
 }
 
-int av_window_cursor(av_Window * avwindow, int enable) {
+int av_window_cursor(av_Window * AVWindow, int enable) {
 	static int cursorhides = 0;
 	if (enable) {
 		while (cursorhides < 0) {
@@ -589,13 +620,13 @@ int av_window_cursor(av_Window * avwindow, int enable) {
 
 
 
-int av_window_flush(av_Window * avwindow) {
-	[[((av_WindowCocoa *)avwindow)->glview openGLContext] flushBuffer];
+int av_window_flush(av_Window * AVWindow) {
+	[[((av_WindowCocoa *)AVWindow)->glview openGLContext] flushBuffer];
 	return 0;
 }
 
-int av_window_destroy(av_Window * avwindow) {
-	delete ((av_WindowCocoa *)avwindow);
+int av_window_destroy(av_Window * AVWindow) {
+	delete ((av_WindowCocoa *)AVWindow);
 	return 0;
 }
 
@@ -644,6 +675,8 @@ int av_init() {
    		pool = [NSAutoreleasePool new];
 		// get/create the NSApplication
 		app = [NSApplication sharedApplication];
+		
+		
 		// In Snow Leopard, programs without application bundles and Info.plist files don't get a menubar and can't be brought to the front unless the presentation option is changed:
 		[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 		// Next, we need to create the menu bar. You don't need to give the first item in the menubar a name (it will get the application's name automatically):
@@ -664,7 +697,8 @@ int av_init() {
 		// set delegate:
     	appDelegate = [[[AVAppDelegate alloc] init] autorelease];
 		
-		[NSApp activateIgnoringOtherApps:YES];
+		// apparently this is necessary:
+		[app finishLaunching];
 		
 		initialized = 1;
 		
@@ -672,12 +706,61 @@ int av_init() {
 	return 0;
 }
 
+// block until another event is ready:
+int av_run_waitevent() {
+	NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+	//NSEvent * event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantFuture] inMode:NSDefaultRunLoopMode dequeue:NO];
+	[pool release];
+	return 0;
+}
+
+// clear the current event queue:
+int av_run_once(int blocking) {
+	// We need to handle the autorelease pool
+	// because we are in our own loop
+	NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+	NSEvent * event = 0;
+	
+	if (blocking) {
+		// wait for the next event: 
+		event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantFuture] inMode:NSDefaultRunLoopMode dequeue:YES];
+	} else {
+		// grab an existing event:
+		event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantPast] inMode:NSDefaultRunLoopMode dequeue:YES];
+	}
+	
+	// Process events
+	// (or NSEventTrackingRunLoopMode )
+	while (event) {
+		NSWindow * window = [event window];
+		//[window sendEvent:event];
+		
+		// pass to app delegate (will also forward to windows):
+		[app sendEvent:event];
+		
+		// grab any other existing events:
+		event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantPast] inMode:NSDefaultRunLoopMode dequeue:YES];
+	}
+	[app updateWindows];
+
+	// Clean up any autoreleased objects that were created this time through the loop.
+	[pool release];
+	return 0;
+}
+
 // hand over control of the app to Cocoa:
 // (This would be called in advance of the script from within LuaAV, but must be called manually from a LuaJIT command line script)
 int av_run() {
+
     if (!running && av_init() == 0) {
- 	   	[app run];
-    	[pool drain];
+    	running = true;
+ 	   	//[app run];
+ 	   	//[pool drain];
+ 	   	// @see http://stackoverflow.com/questions/6732400/cocoa-integrate-nsapplication-into-an-existing-c-mainloop
+ 	   	// @see http://www.cocoawithlove.com/2009/01/demystifying-nsapplication-by.html
+ 	   	while (running) {
+			av_run_once(1);
+		}
 	}
 	return 0;
 }

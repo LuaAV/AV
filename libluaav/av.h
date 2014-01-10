@@ -44,6 +44,7 @@ typedef struct av_Window {
 
 int av_init();
 int av_run();
+int av_run_once(int blocking);
 
 double av_time();
 void av_sleep(double seconds);
