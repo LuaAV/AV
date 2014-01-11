@@ -43,10 +43,10 @@ typedef struct av_WindowCocoa : public av_Window {
 	AVOpenGLView * glview;
 	
 	av_WindowCocoa(const char * title, int x, int y, int w, int h) {
-		dim.x = x;
-		dim.y = y;
-		dim.w = w;
-		dim.h = h;
+		this->x = x;
+		this->y = y;
+		this->width = w;
+		this->height = h;
 	
 		shift = ctrl = alt = cmd = 0;
 		autoclear = 1;
@@ -388,6 +388,8 @@ https://developer.apple.com/library/mac/documentation/cocoa/Reference/Applicatio
 	[super reshape];
 	if (AVWindow && AVWindow->resize_callback) {
 		NSRect dim = [[[self window] contentView] bounds];
+		AVWindow->width = dim.size.width;
+		AVWindow->height = dim.size.height;
 		AVWindow->resize_callback(AVWindow, dim.size.width, dim.size.height);
 	}
 }
@@ -490,10 +492,11 @@ void av_WindowCocoa::open() {
 	// get new extents
 	NSRect nsdim;
 	if (isfullscreen) {
-		fullscreendim = av_screens_main();	// TODO: current screen?
-		nsdim = NSMakeRect(fullscreendim.x, fullscreendim.y, fullscreendim.w, fullscreendim.h);
+		// cache current dimension:
+		av_PixelRect fullscreendim = av_screens_main();	// TODO: current screen?
+		nsdim = NSMakeRect(fullscreendim.x, fullscreendim.y, fullscreendim.width, fullscreendim.height);
 	} else {
-		nsdim = NSMakeRect(dim.x, dim.y, dim.w, dim.h);
+		nsdim = NSMakeRect(x, y, width, height);
 	}
 	
 	// close existing window
@@ -558,8 +561,24 @@ av_Window * av_window_create(const char * title, int x, int y, int w, int h) {
 } 
 
 int av_window_fullscreen(av_Window * AVWindow, int enable) {
-	((av_WindowCocoa *)AVWindow)->isfullscreen = enable;
-	((av_WindowCocoa *)AVWindow)->open();
+	av_WindowCocoa * win = (av_WindowCocoa *)AVWindow;
+	if (win->isfullscreen != enable) {
+		if (enable) {
+			printf("caching %d %d\n", win->width, win->height);
+			// cache current dimensions for when exiting fullscreen:
+			
+			NSRect dim = [[win->window contentView] bounds];
+			win->restore_dim.width = dim.size.width;
+			win->restore_dim.height = dim.size.height;
+			AVWindow->resize_callback(AVWindow, dim.size.width, dim.size.height);
+		} else {
+			// restore them:
+			win->width = win->restore_dim.width;
+			win->height = win->restore_dim.height;
+		}
+		win->isfullscreen = enable;
+		win->open();
+	}
 	return 0;
 }
 
@@ -626,15 +645,15 @@ av_PixelRect av_PixelRect_from_NSScreen(NSScreen * screen) {
 
 	mainrect.x = mainframe.origin.x;
 	mainrect.y = mainframe.origin.y;
-	mainrect.w = mainframe.size.width;
-	mainrect.h = mainframe.size.height;
+	mainrect.width = mainframe.size.width;
+	mainrect.height = mainframe.size.height;
 	
 	rect.x = frame.origin.x;
 	rect.y = frame.origin.y;
-	rect.w = frame.size.width;
-	rect.h = frame.size.height;
+	rect.width = frame.size.width;
+	rect.height = frame.size.height;
 	
-	rect.y = mainrect.h - rect.y - rect.h;
+	rect.y = mainrect.height - rect.y - rect.height;
 	
 	return rect;
 }

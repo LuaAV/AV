@@ -37,7 +37,7 @@ cursorstyle
 
 print(lib.av_screens_count(), "screens found")
 local dim = lib.av_screens_main()
-print("main screen:", dim.x, dim.y, dim.w, dim.h)
+print("main screen:", dim.x, dim.y, dim.width, dim.height)
 
 
 local debug_traceback = debug.traceback
@@ -63,7 +63,20 @@ local default_create_callback = function(self)
 	gl.context_changed()
 end
 local default_resize_callback = function(self, w, h) end
-local default_draw_callback = function(self, dt) end
+local default_draw_callback = function(self, dt) 
+	-- if win:draw() was not assigned,
+	-- use the global draw() instead
+	local draw = _G.draw
+	if draw then
+		-- call safely with nice error handling:
+		local ok, err = xpcall(function() draw(self, dt) end, debug_traceback)
+		if not ok then
+			print(err)
+			-- if an error was thrown, cancel the draw to prevent endless error spew:
+			_G.draw = nil
+		end
+	end
+end
 local default_mouse_callback = function(self, event, btn, x, y, dx, dy) end
 local default_key_callback = function(self, event, key) 
 	event = eventnames[event]

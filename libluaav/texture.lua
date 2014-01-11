@@ -12,6 +12,7 @@ local function new(width, height, numtextures)
 		target = gl.TEXTURE_2D,
 		magfilter = gl.LINEAR,
 		minfilter = gl.LINEAR_MIPMAP_LINEAR,
+		mipmap = gl.TRUE,
 		clamp = gl.CLAMP_TO_EDGE,
 		internalformat = gl.RGBA,
 		format = gl.RGBA,
@@ -114,7 +115,7 @@ function texture:create()
 			gl.TexParameteri(self.target, gl.TEXTURE_MAG_FILTER, self.magfilter)
 			gl.TexParameteri(self.target, gl.TEXTURE_MIN_FILTER, self.minfilter)
 			-- automatic mipmap
-			gl.TexParameteri(self.target, gl.GENERATE_MIPMAP, gl.TRUE)
+			gl.TexParameteri(self.target, gl.GENERATE_MIPMAP, self.mipmap)
 			-- allocate:
 			self:send()
 		end

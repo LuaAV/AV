@@ -22,11 +22,13 @@ typedef enum {
 } AV_MODIFIERS;
 
 typedef struct av_PixelRect {
-	int x, y, w, h;
+	int x, y, width, height;
 } av_PixelRect;
 
 typedef struct av_Window {
-	av_PixelRect dim, fullscreendim;
+	int x, y, width, height;
+	// the dimensions of the window when restoring from exiting full-screen:
+	av_PixelRect restore_dim;
 
 	bool shift, ctrl, alt, cmd;
 	
