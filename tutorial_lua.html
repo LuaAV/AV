@@ -174,13 +174,13 @@ lines]]</span>
 <span class="identifier">t</span>[<span class="number">1</span><span class="symbol">]</span> <span class="symbol">=</span> <span class="string">"one"</span>    <span class="comment">-- array-like</span>
 <span class="identifier">t</span>[<span class="string">"two"</span><span class="symbol">]</span> <span class="symbol">=</span> <span class="number">2</span>    <span class="comment">-- dictionary-like</span>
 <span class="comment">-- a simpler way of saying that:</span>
-<span class="identifier">t</span><span class="symbol">.</span><span class="identifier">two</span> <span class="symbol">=</span> <span class="number">2</span>
+<span class="identifier">t.two</span> <span class="symbol">=</span> <span class="number">2</span>
 
-<a href="http://www.lua.org/manual/5.1/manual.html#pdf-print"><span class="global">print</span></a><span class="symbol">(</span><span class="identifier">t</span><span class="symbol">.</span><span class="identifier">two</span>, <span class="identifier">t</span>[<span class="string">"two"</span><span class="symbol">]</span><span class="symbol">)</span>    <span class="comment">--> 2 2</span>
+<a href="http://www.lua.org/manual/5.1/manual.html#pdf-print"><span class="global">print</span></a><span class="symbol">(</span><span class="identifier">t.two</span>, <span class="identifier">t</span>[<span class="string">"two"</span><span class="symbol">]</span><span class="symbol">)</span>    <span class="comment">--> 2 2</span>
 
 <span class="comment">-- remove a key-value pair by assigning the value nil:</span>
-<span class="identifier">t</span><span class="symbol">.</span><span class="identifier">two</span> <span class="symbol">=</span> <span class="keyword">nil</span>
-<a href="http://www.lua.org/manual/5.1/manual.html#pdf-print"><span class="global">print</span></a><span class="symbol">(</span><span class="identifier">t</span><span class="symbol">.</span><span class="identifier">two</span><span class="symbol">)</span>          <span class="comment">--> <nil></span>
+<span class="identifier">t.two</span> <span class="symbol">=</span> <span class="keyword">nil</span>
+<a href="http://www.lua.org/manual/5.1/manual.html#pdf-print"><span class="global">print</span></a><span class="symbol">(</span><span class="identifier">t.two</span><span class="symbol">)</span>          <span class="comment">--> <nil></span>
 
 <span class="comment">-- create a table with a sub-table:</span>
 <span class="identifier">t</span> <span class="symbol">=</span> <span class="symbol">{</span>
@@ -264,7 +264,7 @@ lines]]</span>
 <p>Functions can zero or more arguments. In Lua, they can also have more than one return vaue:</p>
 
 <pre><span class="keyword">function</span> <span class="identifier">minmax</span><span class="symbol">(</span><span class="identifier">a</span>, <span class="identifier">b</span><span class="symbol">)</span>
-  <span class="keyword">return</span> <span class="identifier">math</span><span class="symbol">.</span><span class="identifier">min</span><span class="symbol">(</span><span class="identifier">a</span>, <span class="identifier">b</span><span class="symbol">)</span>, <span class="identifier">math</span><span class="symbol">.</span><span class="identifier">max</span><span class="symbol">(</span><span class="identifier">a</span>, <span class="identifier">b</span><span class="symbol">)</span>
+  <span class="keyword">return</span> <a href="http://www.lua.org/manual/5.1/manual.html#pdf-math.min"><span class="global">math.min</span></a><span class="symbol">(</span><span class="identifier">a</span>, <span class="identifier">b</span><span class="symbol">)</span>, <a href="http://www.lua.org/manual/5.1/manual.html#pdf-math.max"><span class="global">math.max</span></a><span class="symbol">(</span><span class="identifier">a</span>, <span class="identifier">b</span><span class="symbol">)</span>
 <span class="keyword">end</span>
 <a href="http://www.lua.org/manual/5.1/manual.html#pdf-print"><span class="global">print</span></a><span class="symbol">(</span><span class="identifier">minmax</span><span class="symbol">(</span><span class="number">42</span>, <span class="number">13</span><span class="symbol">)</span><span class="symbol">)</span> <span class="comment">-- prints: 13 42</span>
 </pre>
@@ -365,16 +365,16 @@ lines]]</span>
 <span class="identifier">myobject</span> <span class="symbol">=</span> <span class="symbol">{</span> <span class="identifier">value</span> <span class="symbol">=</span> <span class="number">10</span> <span class="symbol">}</span>
 
 <span class="comment">-- add a function:</span>
-<span class="identifier">myobject</span><span class="symbol">.</span><span class="identifier">printvalue</span> <span class="symbol">=</span> <span class="keyword">function</span><span class="symbol">(</span><span class="identifier">self</span><span class="symbol">)</span>
-    <a href="http://www.lua.org/manual/5.1/manual.html#pdf-print"><span class="global">print</span></a><span class="symbol">(</span><span class="identifier">self</span><span class="symbol">.</span><span class="identifier">value</span><span class="symbol">)</span>
+<span class="identifier">myobject.printvalue</span> <span class="symbol">=</span> <span class="keyword">function</span><span class="symbol">(</span><span class="identifier">self</span><span class="symbol">)</span>
+    <a href="http://www.lua.org/manual/5.1/manual.html#pdf-print"><span class="global">print</span></a><span class="symbol">(</span><span class="identifier">self.value</span><span class="symbol">)</span>
 <span class="keyword">end</span>
 
 <span class="comment">-- test it:</span>
-<span class="identifier">myobject</span><span class="symbol">.</span><span class="identifier">printvalue</span><span class="symbol">(</span><span class="identifier">myobject</span><span class="symbol">)</span>   <span class="comment">--> 10</span>
+<span class="identifier">myobject.printvalue</span><span class="symbol">(</span><span class="identifier">myobject</span><span class="symbol">)</span>   <span class="comment">--> 10</span>
 
 <span class="comment">-- use the colon syntax instead passes the 'self' argument implicitly:</span>
 <span class="keyword">function</span> <span class="identifier">myobject</span><span class="symbol">:</span><span class="identifier">printvalue</span><span class="symbol">(</span><span class="symbol">)</span>
-    <a href="http://www.lua.org/manual/5.1/manual.html#pdf-print"><span class="global">print</span></a><span class="symbol">(</span><span class="identifier">self</span><span class="symbol">.</span><span class="identifier">value</span><span class="symbol">)</span>
+    <a href="http://www.lua.org/manual/5.1/manual.html#pdf-print"><span class="global">print</span></a><span class="symbol">(</span><span class="identifier">self.value</span><span class="symbol">)</span>
 <span class="keyword">end</span>
 
 <span class="identifier">myobject</span><span class="symbol">:</span><span class="identifier">printvalue</span><span class="symbol">(</span><span class="symbol">)</span>           <span class="comment">--> 10</span>
@@ -415,40 +415,34 @@ lines]]</span>
 
 <p>A module is (usually) just a table of functions, stored in a separate file. Modules act like external libraries: re-usable, encapsulated, <em>modular</em>. Load modules using <em>require</em>:</p>
 
-<p><code>`
--- load the foo module (foo.lua):
-local foo = require "foo"</code></p>
+<pre><span class="comment">-- load the foo module (foo.lua):</span>
+<span class="keyword">local</span> <span class="identifier">foo</span> <span class="symbol">=</span> <a href="http://www.lua.org/manual/5.1/manual.html#pdf-require"><span class="global">require</span></a> <span class="string">"foo"</span>
 
-<p>&mdash; use a module function:
-foo.this()
-foo.that()
-<code>`</code></p>
+<span class="comment">-- use a module function:</span>
+<span class="identifier">foo.this</span><span class="symbol">(</span><span class="symbol">)</span>
+<span class="identifier">foo.that</span><span class="symbol">(</span><span class="symbol">)</span>
+</pre>
+
 
 <p>To create a module, simply create a Lua script whose last action is to return a table. This table will typically have functions inside. Modules should not create any global variables, only locals. Modules can be placed next to the script, or in any of the locations specified by the <em>package.path</em> string. The name of the module file should match the module name.</p>
 
-<p><code>`
--- this is the foo module, i.e. foo.lua</code></p>
+<pre><span class="comment">-- this is the foo module, i.e. foo.lua</span>
 
-<p>&mdash; create the module table
-local foo = {}</p>
+<span class="comment">-- create the module table</span>
+<span class="keyword">local</span> <span class="identifier">foo</span> <span class="symbol">=</span> <span class="symbol">{</span><span class="symbol">}</span>
 
-<p>&mdash; add some functions to the module:
-foo.this = function()</p>
+<span class="comment">-- add some functions to the module:</span>
+<span class="identifier">foo.this</span> <span class="symbol">=</span> <span class="keyword">function</span><span class="symbol">(</span><span class="symbol">)</span>
+    <a href="http://www.lua.org/manual/5.1/manual.html#pdf-print"><span class="global">print</span></a><span class="symbol">(</span><span class="string">'this'</span><span class="symbol">)</span>
+<span class="keyword">end</span>
+<span class="identifier">foo.that</span> <span class="symbol">=</span> <span class="keyword">function</span><span class="symbol">(</span><span class="symbol">)</span>
+    <a href="http://www.lua.org/manual/5.1/manual.html#pdf-print"><span class="global">print</span></a><span class="symbol">(</span><span class="string">'that'</span><span class="symbol">)</span>
+<span class="keyword">end</span>
 
-<pre><code>print('this')
-</code></pre>
+<span class="comment">-- return the module table</span>
+<span class="keyword">return</span> <span class="identifier">foo</span>
+</pre>
 
-<p>end
-foo.that = function()</p>
-
-<pre><code>print('that')
-</code></pre>
-
-<p>end</p>
-
-<p>&mdash; return the module table
-return foo
-<code>`</code></p>
 
 <p>Lua guarantees a given module is only executed once. Additional calls to <em>require &ldquo;foo&rdquo;</em> will always return the same table.</p>
 
@@ -456,90 +450,86 @@ return foo
 
 <p>The <a href="http://luajit.org/ext_ffi.html">Foreign-Function Interface (FFI)</a> allows LuaJIT to work with C language data types and functions, and even load and use pre-compiled C libraries. Working with FFI types is usually more difficult (and dangerous!) than plain Lua, but in certain cases it can run a lot faster. To use the ffi, first:</p>
 
-<p><code>`
-local ffi = require "ffi"
-</code><code></code></p>
+<pre><span class="keyword">local</span> <span class="identifier">ffi</span> <span class="symbol">=</span> <a href="http://www.lua.org/manual/5.1/manual.html#pdf-require"><span class="global">require</span></a> <span class="string">"ffi"</span>
+</pre>
+
 
 <p>To create a new C-type object (&ldquo;cdata&rdquo;), use <strong>ffi.new()</strong>. For example, to create C-style arrays of 64-bit floating point numbers (C-type <em>double</em>):</p>
 
-<p><code>`
--- create an array of five numbers (initialized with zeroes by default):
-local arr = ffi.new("double[5]")
-local arr = ffi.new("double[?]", 5)</code></p>
+<pre><span class="comment">-- create an array of five numbers (initialized with zeroes by default):</span>
+<span class="keyword">local</span> <span class="identifier">arr</span> <span class="symbol">=</span> <span class="identifier">ffi.new</span><span class="symbol">(</span><span class="string">"double[5]"</span><span class="symbol">)</span>
+<span class="keyword">local</span> <span class="identifier">arr</span> <span class="symbol">=</span> <span class="identifier">ffi.new</span><span class="symbol">(</span><span class="string">"double[?]"</span>, <span class="number">5</span><span class="symbol">)</span>
 
-<p>&mdash; create an array of five numbers (initialized with 1, 2, 3, 4, 5):
-local arr = ffi.new(&ldquo;double[5]&rdquo;, 1, 2, 3, 4, 5)
-local arr = ffi.new(&ldquo;double[?]&rdquo;, 5, 1, 2, 3, 4, 5)
-local arr = ffi.new(&ldquo;double[5]&rdquo;, {1, 2, 3, 4, 5})
-local arr = ffi.new(&ldquo;double[?]&rdquo;, 5, {1, 2, 3, 4, 5})
-<code>`</code></p>
+<span class="comment">-- create an array of five numbers (initialized with 1, 2, 3, 4, 5):</span>
+<span class="keyword">local</span> <span class="identifier">arr</span> <span class="symbol">=</span> <span class="identifier">ffi.new</span><span class="symbol">(</span><span class="string">"double[5]"</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span><span class="symbol">)</span>
+<span class="keyword">local</span> <span class="identifier">arr</span> <span class="symbol">=</span> <span class="identifier">ffi.new</span><span class="symbol">(</span><span class="string">"double[?]"</span>, <span class="number">5</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span><span class="symbol">)</span>
+<span class="keyword">local</span> <span class="identifier">arr</span> <span class="symbol">=</span> <span class="identifier">ffi.new</span><span class="symbol">(</span><span class="string">"double[5]"</span>, <span class="symbol">{</span><span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span><span class="symbol">}</span><span class="symbol">)</span>
+<span class="keyword">local</span> <span class="identifier">arr</span> <span class="symbol">=</span> <span class="identifier">ffi.new</span><span class="symbol">(</span><span class="string">"double[?]"</span>, <span class="number">5</span>, <span class="symbol">{</span><span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span><span class="symbol">}</span><span class="symbol">)</span>
+</pre>
+
 
 <p>Arrays can be indexed just as in C. That means <em>it counts from zero</em>, unlike Lua tables that count from 1:</p>
 
-<p><code>`
-arr[2] = 4.2
-print(arr[2])   --&gt; prints 4.2
-</code><code></code></p>
+<pre><span class="identifier">arr</span>[<span class="number">2</span><span class="symbol">]</span> <span class="symbol">=</span> <span class="number">4.2</span>
+<a href="http://www.lua.org/manual/5.1/manual.html#pdf-print"><span class="global">print</span></a><span class="symbol">(</span><span class="identifier">arr</span>[<span class="number">2</span><span class="symbol">]</span><span class="symbol">)</span>     <span class="comment">--> prints 4.2</span>
+</pre>
+
 
 <p>The <strong>ffi.cdef</strong> function is used to define new aggregate C types (structs):</p>
 
-<p><code>`
--- create declarations of C types in a long string:
-local cdefs = [[</code></p>
+<pre><span class="comment">-- create declarations of C types in a long string:</span>
+<span class="keyword">local</span> <span class="identifier">cdefs</span> <span class="symbol">=</span> <span class="string">[[
 
-<pre><code>typedef struct {
-    int a;
-    double b;
-} foo;
+    typedef struct { 
+        int a;
+        double b;
+    } foo;
 
-typedef struct {
-    foo first;
-    foo second;
-} foopair;
-</code></pre>
+    typedef struct {
+        foo first;
+        foo second;
+    } foopair;
 
-<p>]]
-&mdash; add these types the the FFI:
-ffi.cdef(cdefs)</p>
+]]</span>
+<span class="comment">-- add these types the the FFI:</span>
+<span class="identifier">ffi.cdef</span><span class="symbol">(</span><span class="identifier">cdefs</span><span class="symbol">)</span>
 
-<p>&mdash; create a new &ldquo;foo&rdquo; type with all members set to zero:
-local myfoo = ffi.new(&ldquo;foo&rdquo;)</p>
+<span class="comment">-- create a new "foo" type with all members set to zero:</span>
+<span class="keyword">local</span> <span class="identifier">myfoo</span> <span class="symbol">=</span> <span class="identifier">ffi.new</span><span class="symbol">(</span><span class="string">"foo"</span><span class="symbol">)</span>
 
-<p>&mdash; create a new &ldquo;foo&rdquo; type with specific values:
-local myfoo = ffi.new(&ldquo;foo&rdquo;, { 100, 4.2 })</p>
+<span class="comment">-- create a new "foo" type with specific values:</span>
+<span class="keyword">local</span> <span class="identifier">myfoo</span> <span class="symbol">=</span> <span class="identifier">ffi.new</span><span class="symbol">(</span><span class="string">"foo"</span>, <span class="symbol">{</span> <span class="number">100</span>, <span class="number">4.2</span> <span class="symbol">}</span><span class="symbol">)</span>
 
-<p>print(myfoo.a)       &mdash;> prints 100
-print(myfoo.b)      &mdash;> prints 4.2</p>
+<a href="http://www.lua.org/manual/5.1/manual.html#pdf-print"><span class="global">print</span></a><span class="symbol">(</span><span class="identifier">myfoo.a</span><span class="symbol">)</span>         <span class="comment">--> prints 100</span>
+<a href="http://www.lua.org/manual/5.1/manual.html#pdf-print"><span class="global">print</span></a><span class="symbol">(</span><span class="identifier">myfoo.b</span><span class="symbol">)</span>        <span class="comment">--> prints 4.2</span>
 
-<p>&mdash; create a new &ldquo;foopair&rdquo;:
-local myfoopair = ffi.new(&ldquo;foopair&rdquo;, { { 100, 4.2 }, { 200, 3.14 } })</p>
+<span class="comment">-- create a new "foopair":</span>
+<span class="keyword">local</span> <span class="identifier">myfoopair</span> <span class="symbol">=</span> <span class="identifier">ffi.new</span><span class="symbol">(</span><span class="string">"foopair"</span>, <span class="symbol">{</span> <span class="symbol">{</span> <span class="number">100</span>, <span class="number">4.2</span> <span class="symbol">}</span>, <span class="symbol">{</span> <span class="number">200</span>, <span class="number">3.14</span> <span class="symbol">}</span> <span class="symbol">}</span><span class="symbol">)</span>
 
-<p>print(myfoo.second.a)   &mdash;> prints 200
-<code>`</code></p>
+<a href="http://www.lua.org/manual/5.1/manual.html#pdf-print"><span class="global">print</span></a><span class="symbol">(</span><span class="identifier">myfoo.second.a</span><span class="symbol">)</span>     <span class="comment">--> prints 200</span>
+</pre>
+
 
 <p>The <strong>ffi.load</strong> function is used to load a precompiled library of C code. It is usually coupled with a <strong>ffi.cdef</strong> to declare the functions and types the library contains:</p>
 
-<p><code>`
--- load the "libsndfile" dynamic library:
-local lib = ffi.load("libsndfile-1.dll")</code></p>
+<pre><span class="comment">-- load the "libsndfile" dynamic library:</span>
+<span class="keyword">local</span> <span class="identifier">lib</span> <span class="symbol">=</span> <span class="identifier">ffi.load</span><span class="symbol">(</span><span class="string">"libsndfile-1.dll"</span><span class="symbol">)</span>
 
-<p>&mdash; declare one of the functions exported by the library
-&mdash; (usually we would declare them all at once, but here we just declare one for the example)
-ffi.cdef [[</p>
+<span class="comment">-- declare one of the functions exported by the library</span>
+<span class="comment">-- (usually we would declare them all at once, but here we just declare one for the example)</span>
+<span class="identifier">ffi.cdef</span> <span class="string">[[
+    const char * sf_version_string();
+]]</span>
 
-<pre><code>const char * sf_version_string();
-</code></pre>
+<span class="comment">-- use this function by indexing the library:</span>
+<span class="keyword">local</span> <span class="identifier">version</span> <span class="symbol">=</span> <span class="identifier">lib.sf_version_string</span><span class="symbol">(</span><span class="symbol">)</span>
 
-<p>]]</p>
+<span class="comment">-- version is a cdata of type "const char *"</span>
+<span class="comment">-- (i.e. an immutable array of bytes)</span>
+<span class="comment">-- we can turn it into a Lua string using ffi.string:</span>
+<a href="http://www.lua.org/manual/5.1/manual.html#pdf-print"><span class="global">print</span></a><span class="symbol">(</span><span class="identifier">ffi.string</span><span class="symbol">(</span><span class="identifier">version</span><span class="symbol">)</span><span class="symbol">)</span>
+</pre>
 
-<p>&mdash; use this function by indexing the library:
-local version = lib.sf_version_string()</p>
-
-<p>&mdash; version is a cdata of type &ldquo;const char *&rdquo;
-&mdash; (i.e. an immutable array of bytes)
-&mdash; we can turn it into a Lua string using ffi.string:
-print(ffi.string(version))
-<code>`</code></p>
 
 <p>Note that the special symbol <strong>ffi.C</strong> is a namespace for all the symbols exported by the application itself, including the basic C math library.</p>
 

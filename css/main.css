@@ -31,18 +31,22 @@ h3              { font-size: 1.4em; line-height: 1.0em; margin: .83em 0 }
 h4              { font-size: 1.1em; line-height: 0.7em; margin: 1.0em 0 }
 
 pre {
-	font-family: "Courier 10 Pitch", Courier, monospace;
+	/*font-family: "Courier 10 Pitch", Courier, monospace;*/
+	font-family: Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace;
+	font-size: .9em;
 	background: #f6f6f6;	
 	padding: 5px;	
-	color: #111;
+	color: #333;
+	border: solid 1px #999;
+	
 }
 
-pre .comment { color: #666; }
+pre .comment { color: #999; font-style: italic; }
 pre .string { color: #393; }
-pre .number { color: #963; }
-pre .keyword { color: #26c; }
-pre .symbol { color: #136; }
-pre .identifier { color: #966; }
+pre .number { color: #366; }
+pre .keyword { color: #369; }
+pre .identifier { color: #633; }
+pre .bang { color:933; }
 
 
 a:link,

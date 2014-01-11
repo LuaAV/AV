@@ -64,6 +64,8 @@ local function formatlua(subject)
 		["table.concat"]=true, ["table.insert"]=true, ["table.maxn"]=true, ["table.remove"]=true, ["table.sort"]=true,
 	}
 	
+	-- TODO: add the LuaAV modules, with links to the reference pages.
+	
 	local keywords = {
         ["and"]=true,       ["break"]=true,     ["do"]=true,        ["else"]=true,      ["elseif"]=true, 
         ["end"]=true,       ["false"]=true,     ["for"]=true,       ["function"]=true,  ["if"]=true, 
@@ -85,7 +87,7 @@ local function formatlua(subject)
 		return '<span class="number">'..c..'</span>'
 	end
 	
-	local IDENTIFIER = (AZ * (AZ+N)^0) / function (c) 
+	local IDENTIFIER = (AZ * (AZ+N+".")^0) / function (c) 
 		if keywords[c] then
 			return '<span class="keyword">'..c..'</span>'
 		elseif globals[c] then

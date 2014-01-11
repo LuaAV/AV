@@ -328,7 +328,7 @@ c1()  -- prints: 4
 
 A module is (usually) just a table of functions, stored in a separate file. Modules act like external libraries: re-usable, encapsulated, *modular*. Load modules using *require*:
 
-```
+```lua
 -- load the foo module (foo.lua):
 local foo = require "foo"
 
@@ -339,7 +339,7 @@ foo.that()
 
 To create a module, simply create a Lua script whose last action is to return a table. This table will typically have functions inside. Modules should not create any global variables, only locals. Modules can be placed next to the script, or in any of the locations specified by the *package.path* string. The name of the module file should match the module name.
 
-```
+```lua
 -- this is the foo module, i.e. foo.lua
 
 -- create the module table
@@ -363,13 +363,13 @@ Lua guarantees a given module is only executed once. Additional calls to *requir
 
 The [Foreign-Function Interface (FFI)](http://luajit.org/ext_ffi.html) allows LuaJIT to work with C language data types and functions, and even load and use pre-compiled C libraries. Working with FFI types is usually more difficult (and dangerous!) than plain Lua, but in certain cases it can run a lot faster. To use the ffi, first:
 
-```
+```lua
 local ffi = require "ffi"
 ```
 
 To create a new C-type object ("cdata"), use **ffi.new()**. For example, to create C-style arrays of 64-bit floating point numbers (C-type *double*):
 
-```
+```lua
 -- create an array of five numbers (initialized with zeroes by default):
 local arr = ffi.new("double[5]")
 local arr = ffi.new("double[?]", 5)
@@ -383,14 +383,14 @@ local arr = ffi.new("double[?]", 5, {1, 2, 3, 4, 5})
 
 Arrays can be indexed just as in C. That means *it counts from zero*, unlike Lua tables that count from 1:
 
-```
+```lua
 arr[2] = 4.2
 print(arr[2]) 	--> prints 4.2
 ```
 
 The **ffi.cdef** function is used to define new aggregate C types (structs):
 
-```
+```lua
 -- create declarations of C types in a long string:
 local cdefs = [[
 
@@ -425,7 +425,7 @@ print(myfoo.second.a) 	--> prints 200
 
 The **ffi.load** function is used to load a precompiled library of C code. It is usually coupled with a **ffi.cdef** to declare the functions and types the library contains:
 
-```
+```lua
 -- load the "libsndfile" dynamic library:
 local lib = ffi.load("libsndfile-1.dll")
 
