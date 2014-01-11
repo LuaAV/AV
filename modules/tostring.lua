@@ -1,6 +1,7 @@
 local old_tostring = tostring
 local concat = table.concat
 local format = string.format
+local floor = math.floor
 local table_tostring
 local keywords = {
 	["and"] = true,       
