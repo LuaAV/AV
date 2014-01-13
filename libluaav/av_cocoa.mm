@@ -414,6 +414,8 @@ float rot = 0.;
 		// now call our global window draw...
 		NSRect dim = [[[self window] contentView] bounds];
 		glViewport(0, 0, dim.size.width, dim.size.height);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
 		if (AVWindow->autoclear) {
 			glClearColor(0, 0, 0, 1);
 			glClear(GL_COLOR_BUFFER_BIT);		

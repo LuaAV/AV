@@ -128,7 +128,6 @@ ffi.metatype("av_Window", {
 		elseif k == "key" then
 			self.key_callback:set(function(self, event, key)
 				event = eventnames[event]
-				if event == "down" and key == 27 then self:fullscreen(not self.isfullscreen) end
 				local ok, err = xpcall(function()
 					v(self, event, key)
 				end, debug_traceback)

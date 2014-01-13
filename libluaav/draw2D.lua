@@ -195,8 +195,15 @@ end
 -- @param green value from 0 to 1 (optional, default 0)
 -- @param blue value from 0 to 1 (optional, default 0)
 -- @param alpha (opacity) value from 0 to 1 (optional, default 1)
-function draw2D.color(red, green, blue, alpha) end
-draw2D.color = gl.Color
+function draw2D.color(red, green, blue, alpha) 
+	if not green then
+		gl.Color(red, red, red, 1)
+	elseif not blue then
+		gl.Color(red, red, red, green)
+	else
+		gl.Color(red, green, blue, alpha)
+	end
+end
 
 --- Load an image to draw
 -- @param name the image file name/path
