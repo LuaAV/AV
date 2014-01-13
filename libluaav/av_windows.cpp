@@ -104,9 +104,16 @@ typedef struct av_WindowW32 : public av_Window {
 	}	
 	
 	int open() {
-		hwnd = CreateWindowEx(WS_EX_TOPMOST,"LuaAV","",WS_OVERLAPPEDWINDOW,
-							  x, y, width, height,
-							  GetDesktopWindow(),NULL,HIn,this);
+		hwnd = CreateWindowEx(
+			0, //WS_EX_APPWINDOW,
+			"LuaAV",
+			title,
+			WS_OVERLAPPEDWINDOW,
+			x, y, width, height,
+			NULL, //GetDesktopWindow(), // parent HWND
+			NULL, // menu
+			HIn,
+			this);
 		
 		if(hwnd==NULL) {
 			printf("failed to create window\n");
@@ -125,29 +132,90 @@ typedef struct av_WindowW32 : public av_Window {
 	
 	}
 	
+	void getMods() {
+		shift = (GetAsyncKeyState(VK_SHIFT) & (1 << 31));
+		ctrl = (GetAsyncKeyState(VK_CONTROL) & (1 << 31));
+		alt = (GetAsyncKeyState(VK_MENU) & (1 << 31));
+		cmd = ((GetAsyncKeyState(VK_LWIN) | GetAsyncKeyState(VK_RWIN)) & (1 << 31));
+	}
+	
 } av_WindowW32;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	// not that this will be NULL until the WM_NCCREATE event is posted
     av_WindowW32 * win = (av_WindowW32 *)GetWindowLongPtr(hwnd, GWL_USERDATA);
 	switch(msg) {
+		case WM_CREATE:
 		case WM_NCCREATE: {
 			LONG_PTR userdata = (LONG_PTR)((LPCREATESTRUCT)lParam)->lpCreateParams;
 			SetWindowLongPtr(hwnd, GWL_USERDATA, (LONG_PTR)userdata); 
-			return DefWindowProc(hwnd, msg, wParam, lParam);
-		}
-		case WM_LBUTTONDOWN: {
-			printf("window mousedown %p\n", win);
-			//win->mouse_callback(win, AV_EVENT_MOUSEDOWN, 0, event_location.x, event_location.y, [theEvent deltaX], [theEvent deltaY]);
 			break;
 		}
-		//  case WM_RBUTTONDOWN:
+		case  WM_SIZE: {
+			win->width = LOWORD(lParam);
+			win->height = HIWORD(lParam);
+			if (win && win->resize_callback) win->resize_callback(win, win->width, win->height);
+			break;
+		}
+		case  WM_MOVE: {
+			win->x = LOWORD(lParam);
+			win->y = HIWORD(lParam);
+			if (win && win->resize_callback) win->resize_callback(win, win->width, win->height);
+			break;
+		}
+		
+		case WM_ACTIVATE: {
+			BOOL focused = LOWORD(wParam) != WA_INACTIVE;
+            BOOL iconified = HIWORD(wParam) ? TRUE : FALSE;
+			printf("WM_ACTIVATE\n");
+			break;
+		}
+		//case WM_ACTIVATEAPP:
+		case WM_SHOWWINDOW: {
+			BOOL show = wParam ? 1 : 0;
+			printf("WM_SHOWWINDOW\n");
+			if (win && win->create_callback) win->create_callback(win);
+			break;
+		}
+		case WM_SYSCOMMAND: {
+			switch (wParam & 0xfff0) {
+                case SC_SCREENSAVE:
+                case SC_MONITORPOWER: 
+					// if we are fullscreen, return 0 to prevent screensaver
+				case SC_KEYMENU: {
+					// alt click menu... bypass it
+                    return 0;
+				}
+			}
+			break;
+		}
+		case WM_CLOSE: {
+			printf("WM_CLOSE\n");
+			break;
+		}
+		case WM_DESTROY: {
+			printf("WM_DESTROY\n");
+			break;
+		}
+		case WM_MOUSELEAVE: {
+			printf("WM_MOUSELEAVE\n");
+			break;
+		}
+		case WM_PAINT: {
+			printf("WM_PAINT\n");
+			// dirty the scene
+			break;
+		}
+		case WM_DEVICECHANGE: {
+			printf("WM_DEVICECHANGE\n"); // monitor setup?
+			break;
+		}
 		default: {
-			printf("window event\n");
-			return DefWindowProc(hwnd, msg, wParam, lParam);
+			break;
 		}
 	}
-	return 0L;
+	
+	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
 BOOL Register(HINSTANCE HIn) {
@@ -192,6 +260,21 @@ AV_EXPORT int av_init() {
 AV_EXPORT int av_run() {
 	return 0;
 }
+
+// http://msdn.microsoft.com/en-us/library/windows/desktop/ms646276(v=vs.85).aspx
+union keystate {
+	LPARAM lParam;
+	struct {
+		unsigned nRepeatCount : 16;
+		unsigned nScanCode : 8;
+		unsigned nExtended : 1;
+		unsigned nReserved : 4;
+		unsigned nContext : 1;
+		unsigned nPrev : 1;
+		unsigned nTrans : 1;
+	};
+};
+
 AV_EXPORT int av_run_once(int blocking) {
 	MSG msg;
 	HWND hWnd = NULL;	// get messages for all windows
@@ -214,31 +297,146 @@ AV_EXPORT int av_run_once(int blocking) {
 		//printf("%d\n", message);
 		TranslateMessage(&msg);
 		switch (msg.message) {
+			case WM_QUIT: {
+				PostQuitMessage(0);
+				break;
+			}
+			// consider using RAWMOUSE for mouse handling
+			// http://stackoverflow.com/questions/14113303/raw-input-device-rawmouse-usage
+			// (this should give better handling for games etc.)
 			case WM_LBUTTONDOWN: {
 				av_WindowW32 * win = (av_WindowW32 *)GetWindowLongPtr(hwnd, GWL_USERDATA);
-				printf("mousedown %p %p\n", win, win->mouse_callback);
+				win->mouseX = msg.pt.x;
+				win->mouseY = msg.pt.y;
+				win->getMods();
 				win->mouse_callback(win, AV_EVENT_MOUSEDOWN, 0, msg.pt.x, msg.pt.y, 0, 0);
 				break;
 			}
-			//  case WM_RBUTTONDOWN:
-			case WM_CHAR: {
-				printf("keydown %d\n", msg.wParam);
-				break;
-			}	
-			case WM_KEYDOWN: {
-				//wParam has virtual key code http://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
-				printf("keydown %d \n", msg.wParam);
-				break;
-			}	
-			case WM_DESTROY: {
-				// hwnd is being destroyed...
+			case WM_RBUTTONDOWN:  {
+				av_WindowW32 * win = (av_WindowW32 *)GetWindowLongPtr(hwnd, GWL_USERDATA);
+				win->mouseX = msg.pt.x;
+				win->mouseY = msg.pt.y;
+				win->getMods();
+				win->mouse_callback(win, AV_EVENT_MOUSEDOWN, 1, msg.pt.x, msg.pt.y, 0, 0);
 				break;
 			}
+			case WM_MBUTTONDOWN:  {
+				av_WindowW32 * win = (av_WindowW32 *)GetWindowLongPtr(hwnd, GWL_USERDATA);
+				win->mouseX = msg.pt.x;
+				win->mouseY = msg.pt.y;
+				win->getMods();
+				win->mouse_callback(win, AV_EVENT_MOUSEDOWN, 2, msg.pt.x, msg.pt.y, 0, 0);
+				break;
+			}
+			case WM_LBUTTONUP: {
+				av_WindowW32 * win = (av_WindowW32 *)GetWindowLongPtr(hwnd, GWL_USERDATA);
+				win->mouseX = msg.pt.x;
+				win->mouseY = msg.pt.y;
+				win->getMods();
+				win->mouse_callback(win, AV_EVENT_MOUSEUP, 0, msg.pt.x, msg.pt.y, 0, 0);
+				break;
+			}
+			case WM_RBUTTONUP:  {
+				av_WindowW32 * win = (av_WindowW32 *)GetWindowLongPtr(hwnd, GWL_USERDATA);
+				win->mouseX = msg.pt.x;
+				win->mouseY = msg.pt.y;
+				win->getMods();
+				win->mouse_callback(win, AV_EVENT_MOUSEUP, 1, msg.pt.x, msg.pt.y, 0, 0);
+				break;
+			}
+			case WM_MBUTTONUP:  {
+				av_WindowW32 * win = (av_WindowW32 *)GetWindowLongPtr(hwnd, GWL_USERDATA);
+				win->mouseX = msg.pt.x;
+				win->mouseY = msg.pt.y;
+				win->getMods();
+				win->mouse_callback(win, AV_EVENT_MOUSEUP, 2, msg.pt.x, msg.pt.y, 0, 0);
+				break;
+			}
+			// TODO: calculate dx, dy (e.g. via global), or remove dx, dy from the mouse handling in LuaAV?
+			// or just do it all in window.lua instead (useful anyway to have mouse.x, mouseX whatever available)
+			case WM_MOUSEMOVE:  {
+				av_WindowW32 * win = (av_WindowW32 *)GetWindowLongPtr(hwnd, GWL_USERDATA);
+				int dx = msg.pt.x - win->mouseX;
+				int dy = msg.pt.y - win->mouseY;
+				win->mouseX = msg.pt.x;
+				win->mouseY = msg.pt.y;
+				win->getMods();
+				if (msg.wParam & MK_LBUTTON) {
+					win->mouse_callback(win, AV_EVENT_MOUSEDRAG, 0, msg.pt.x, msg.pt.y, dx, dy);
+				} else if (msg.wParam & MK_RBUTTON) {
+					win->mouse_callback(win, AV_EVENT_MOUSEDRAG, 1, msg.pt.x, msg.pt.y, dx, dy);
+				} else if (msg.wParam & MK_MBUTTON) {
+					win->mouse_callback(win, AV_EVENT_MOUSEDRAG, 2, msg.pt.x, msg.pt.y, dx, dy);
+				} else {
+					win->mouse_callback(win, AV_EVENT_MOUSEMOVE, 0, msg.pt.x, msg.pt.y, dx, dy);
+				}
+				break;
+			}
+			
+			case WM_MOUSEWHEEL: {
+				av_WindowW32 * win = (av_WindowW32 *)GetWindowLongPtr(hwnd, GWL_USERDATA);
+				win->mouse_callback(win, AV_EVENT_MOUSESCROLL, 0, win->mouseX, win->mouseY, 0, (SHORT) HIWORD(msg.wParam) / (double) WHEEL_DELTA);
+				break;
+			}
+			case WM_MOUSEHWHEEL: {
+				av_WindowW32 * win = (av_WindowW32 *)GetWindowLongPtr(hwnd, GWL_USERDATA);
+				win->mouse_callback(win, AV_EVENT_MOUSESCROLL, 0, win->mouseX, win->mouseY, (SHORT) HIWORD(msg.wParam) / (double) WHEEL_DELTA, 0);
+				break;
+			}
+			// TODO: entered, exited
+			
+			/*
+			case WM_CHAR: {
+				// these are the ASCII key codes (not all keys generate them)
+				keystate * ks = (keystate *)(&msg.lParam);
+				printf("chardown %d %d\n", msg.wParam, ks->nPrev);
+				av_WindowW32 * win = (av_WindowW32 *)GetWindowLongPtr(hwnd, GWL_USERDATA);
+				win->key_callback(win, AV_EVENT_KEYDOWN, msg.wParam);
+				break;
+			}	
+			*/
+			case WM_SYSKEYDOWN:
+			case WM_KEYDOWN: {
+				//wParam has virtual key code http://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
+				av_WindowW32 * win = (av_WindowW32 *)GetWindowLongPtr(hwnd, GWL_USERDATA);
+				win->getMods();
+				if (msg.wParam == VK_SHIFT) {
+					win->modifiers_callback(win, AV_EVENT_KEYDOWN, AV_MODIFIERS_SHIFT);
+				} else if (msg.wParam == VK_CONTROL) {
+					win->modifiers_callback(win, AV_EVENT_KEYDOWN, AV_MODIFIERS_CTRL);
+				} else if (msg.wParam == VK_MENU) {
+					win->modifiers_callback(win, AV_EVENT_KEYDOWN, AV_MODIFIERS_ALT);
+				} else if (msg.wParam == VK_LWIN || msg.wParam == VK_RWIN) {
+					win->modifiers_callback(win, AV_EVENT_KEYDOWN, AV_MODIFIERS_CMD);
+				} else {
+					win->key_callback(win, AV_EVENT_KEYDOWN, msg.wParam);
+				}
+				break;
+			}	
+			case WM_SYSKEYUP:
+			case WM_KEYUP: {
+				//wParam has virtual key code http://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx				
+				av_WindowW32 * win = (av_WindowW32 *)GetWindowLongPtr(hwnd, GWL_USERDATA);
+				win->getMods();
+				if (msg.wParam == VK_SHIFT) {
+					win->modifiers_callback(win, AV_EVENT_KEYUP, AV_MODIFIERS_SHIFT);
+				} else if (msg.wParam == VK_CONTROL) {
+					win->modifiers_callback(win, AV_EVENT_KEYUP, AV_MODIFIERS_CTRL);
+				} else if (msg.wParam == VK_MENU) {
+					win->modifiers_callback(win, AV_EVENT_KEYUP, AV_MODIFIERS_ALT);
+				} else if (msg.wParam == VK_LWIN || msg.wParam == VK_RWIN) {
+					win->modifiers_callback(win, AV_EVENT_KEYUP, AV_MODIFIERS_CMD);
+				} else {
+					win->key_callback(win, AV_EVENT_KEYUP, msg.wParam);
+				}
+				break;
+			}	
 			default: {
+				printf("app event\n");
+				DispatchMessage(&msg);
 				break;
 			}
 		}
-		DispatchMessage(&msg);
 		
 		// next one:
 		todo = PeekMessage(&msg,NULL,0,0,PM_REMOVE);
@@ -261,6 +459,11 @@ AV_EXPORT int av_window_sync(av_Window * avwindow, int enable) {
 	return 0;
 }
 AV_EXPORT int av_window_cursor(av_Window * avwindow, int enable) {
+	if (enable) {
+		SetCursor(NULL);
+	} else {
+		SetCursor(LoadCursor(NULL, IDC_ARROW));
+	}
 	return 0;
 }
 AV_EXPORT int av_window_fullscreen(av_Window * avwindow, int enable) {
@@ -270,9 +473,19 @@ AV_EXPORT int av_window_destroy(av_Window * window) {
 	return 0;
 }
 
+// see http://msdn.microsoft.com/en-us/library/dd144901.aspx
 AV_EXPORT int av_screens_count() {
 	return 1;
 }
-AV_EXPORT av_PixelRect av_screens_main();
+AV_EXPORT av_PixelRect av_screens_main() {
+	LPRECT lpRect;
+	GetWindowRect(GetDesktopWindow(), lpRect);
+	av_PixelRect result;
+	result.x = lpRect->left;
+	result.y = lpRect->top;
+	result.width = lpRect->right - lpRect->left;
+	result.height = lpRect->bottom - lpRect->top; // or the other way?
+	return result;
+}
 AV_EXPORT av_PixelRect av_screens_deepest();
 AV_EXPORT av_PixelRect av_screens_index(int idx);
