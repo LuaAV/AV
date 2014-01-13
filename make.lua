@@ -1,5 +1,16 @@
 #!/usr/bin/env luajit
 
+
+
+--[[
+	Before building the site, it makes sense to rebuild the docs
+		- scan the source tree for modules (.lua (or .ldoc, .c, .cpp ,.mm etc.))
+		- if they contain @module, then store them in the list (with path prefix)
+		- scan each one, to identify the --- comments that identify functions etc.
+		- generating md files accordingly inside /source/doc/
+		- all the names encountered should also be added to docurl.lua so that generated code sections of pages will link to them
+--]]
+
 --[[
 
 # Static site generator
@@ -116,12 +127,13 @@ local sys = require "sys"
 local kqueue = require "kqueue"
 local md = require "md"
 local template = require "template"
-tostring = require "tostring"
+--tostring = require "tostring"
 
 local config = {
 	path = {
 		content = "source",
 		public = ".",
+		doc_content = "../libluaav"
 	},
 }
 
@@ -135,6 +147,7 @@ local action = arg.action or arg[1] or "build"
 
 local jobsort_priorities = { 
 	"html",
+	"doc",
 	"lua", 
 	"md",
 } 
@@ -183,21 +196,31 @@ local function job_run(job)
 		end
 	elseif job.type == "lua" then
 	
-		print("run", job.fullpath)
+		print("run", job.fullpath, str)
 		
 		-- pass in any args?
-		local ok, result = pcall(dostring, str)
-		if not ok then print("error running", job.fullpath, result) end
-		
-		-- do what with result?
-		print(result)
+		local f, err = loadstring(str)
+		if not f then 
+			print(err) 
+		else
+			local ok, result = xpcall(function()
+				f(str, config, job)
+			end, debug.traceback)
+			if not ok then print("error running", job.fullpath, result) end
+		end
 		
 	elseif job.type == "md" then
 		-- maybe pull out some header info first?
 		
 		local tmp = job.template or templates.default
 		
-		job.body = md(str)
+		job.body, job.links = md(str)
+		
+		-- TODO: we could use this to create a side menu
+		-- or even site-wide menu
+		for i, v in ipairs(job.links) do
+			print(v.title, "->", "#"..v.aname)
+		end
 		
 		-- paste into generic page template
 		local result = tmp(job)
@@ -214,7 +237,24 @@ local function job_run(job)
 		of = io.open(of, "w")
 		of:write(result)
 		of:close()
+	elseif job.type == "doc" then
+		-- does it contain @module?
+		if str:find("@module") then
 		
+			local result = "module"
+		
+			-- write it:
+			local of = config.path.content .. fs.sep 
+					.. "doc" .. fs.sep .. concat(job.path, fs.sep) .. fs.sep
+					.. job.name .. ".md"
+			print(of)
+			
+			cmd("touch "..of)
+		
+			of = io.open(of, "w")
+			of:write(result)
+			of:close()
+		end
 	end
 	
 	watched[job] = true
@@ -255,9 +295,40 @@ local function job_from_file(path, name)
 	w.job = job
 end
 
+function doc_from_file(path, name)
+	local fullpath = config.path.doc_content .. fs.sep 
+					.. concat(path, fs.sep) .. fs.sep 
+					.. name
+	local ext, name = fs.ext(name)	
+	
+	if ext == "lua" then
+		print(fullpath, ext, name)
+		
+		local job = {
+			type="doc",
+			name=name,
+			path=path,
+			fullpath=fullpath,
+			title=name,
+		
+			modified = fs.modified(fullpath),
+		}
+		job_add(job)
+	
+		local w = kqueue.watch(kq, fullpath, function(w)
+			print("modified:", w.filename, w.fd)
+			job_add(w.job)
+			run_jobs()
+		end)
+		w.job = job
+	end
+end
+
 -- build up the list of jobs:
 if action == "build" then
 	print("building site")
+	
+	fs.iter(config.path.doc_content, doc_from_file, true)
 	
 	-- iterate the content path (recursively):
 	fs.iter(config.path.content, job_from_file, true)
