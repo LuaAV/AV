@@ -3,7 +3,11 @@
 local av = require "av"
 local Window = require "av.window"
 
-local win = Window
+local win = Window()
+
+function win:mouse(event, btn, x, y, dx, dy) 
+	print("mouse", event, btn, x, y, dx, dy)
+end
 
 --[[
 local draw2D = require "draw2D"

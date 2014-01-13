@@ -181,6 +181,7 @@ function Window(title, w, h, x, y)
 	h = h or 480
 	
 	local win = lib.av_window_create(title, x, y, w, h)
+	assert(win ~= nil, "window creation failed")
 	
 	-- install gc handler:
 	ffi.gc(win, function(self) 

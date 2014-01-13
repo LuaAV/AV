@@ -30,6 +30,11 @@ local av = {
 	sleep = lib.av_sleep,
 }
 
+-- unfortunately we have to turn jit off here, 
+-- because it might trigger callbacks back into Lua via the event handlers
+-- @see http://lua-users.org/lists/lua-l/2011-12/msg00720.html
+jit.off(av.run)
+
 av.init()
 
 
