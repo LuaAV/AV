@@ -70,24 +70,24 @@ typedef struct av_Audio {
 	
 } av_Audio;
 
-int av_init();
-int av_run();
-int av_run_once(int blocking);
+AV_EXPORT int av_init();
+AV_EXPORT int av_run();
+AV_EXPORT int av_run_once(int blocking);
 
-double av_time();
-void av_sleep(double seconds);
+AV_EXPORT double av_time();
+AV_EXPORT void av_sleep(double seconds);
 
-av_Audio * av_audio_get();
-void av_audio_start();
+AV_EXPORT av_Audio * av_audio_get();
+AV_EXPORT void av_audio_start();
 
-av_Window * av_window_create(const char * title, int x, int y, int w, int h);
-int av_window_flush(av_Window * avwindow);
-int av_window_sync(av_Window * avwindow, int enable);
-int av_window_cursor(av_Window * avwindow, int enable);
-int av_window_fullscreen(av_Window * avwindow, int enable);
-int av_window_destroy(av_Window * window);
+AV_EXPORT av_Window * av_window_create(const char * title, int x, int y, int w, int h);
+AV_EXPORT int av_window_flush(av_Window * avwindow);
+AV_EXPORT int av_window_sync(av_Window * avwindow, int enable);
+AV_EXPORT int av_window_cursor(av_Window * avwindow, int enable);
+AV_EXPORT int av_window_fullscreen(av_Window * avwindow, int enable);
+AV_EXPORT int av_window_destroy(av_Window * window);
 
-int av_screens_count();
-av_PixelRect av_screens_main();
-av_PixelRect av_screens_deepest();
-av_PixelRect av_screens_index(int idx);
+AV_EXPORT int av_screens_count();
+AV_EXPORT av_PixelRect av_screens_main();
+AV_EXPORT av_PixelRect av_screens_deepest();
+AV_EXPORT av_PixelRect av_screens_index(int idx);

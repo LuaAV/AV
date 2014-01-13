@@ -1,6 +1,8 @@
 local ffi = require "ffi"
 
-ffi.cdef (io.open("av.h"):read("*a"))
+local h = io.open("av.h"):read("*a")
+h = h:gsub("AV_EXPORT ", "")
+ffi.cdef (h)
 local lib = ffi.load("av")
 
 return lib

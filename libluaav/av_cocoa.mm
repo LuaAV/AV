@@ -1,5 +1,18 @@
 #import <Cocoa/Cocoa.h>
 
+#include <unistd.h>
+#include <sys/time.h>
+#include <sys/stat.h>
+#include <time.h>
+#include <libgen.h>
+#include <utime.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#define AV_PATH_MAX PATH_MAX
+#define AV_GETCWD getcwd
+#define AV_SNPRINTF snprintf
 
 /*
 	One goal here is to see if we can drive a Cocoa mainloop from the Lua command line. That implies: no app, no nib, no Info.plist etc. The script must create the NSApp, the menubar, window, handle events etc. all from within a dylib.
@@ -11,6 +24,7 @@
 
 // @see http://www.cocoawithlove.com/2010/09/minimalist-cocoa-programming.html		
 // @see http://stackoverflow.com/questions/6732400/cocoa-integrate-nsapplication-into-an-existing-c-mainloop
+
 
 #include "av.hpp"
 
@@ -676,6 +690,20 @@ av_PixelRect av_screens_main() {
 	return av_screens_index(0);
 }
 
+double av_time() {
+	timeval t;
+	gettimeofday(&t, NULL);
+	return (double)t.tv_sec + (((double)t.tv_usec) * 1.0e-6);
+}	
+
+void av_sleep(double seconds) {
+	time_t sec = (time_t)seconds;
+	long long int nsec = 1.0e9 * (seconds - (double)sec);
+	timespec tspec = { sec, nsec };
+	while (nanosleep(&tspec, &tspec) == -1) {
+		continue;
+	}
+}
 
 int av_init() {
 	if (!initialized) {

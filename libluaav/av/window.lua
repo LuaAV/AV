@@ -34,11 +34,11 @@ cursorstyle
 
 --]]
 
-
+--[[
 print(lib.av_screens_count(), "screens found")
 local dim = lib.av_screens_main()
 print("main screen:", dim.x, dim.y, dim.width, dim.height)
-
+--]]
 
 local debug_traceback = debug.traceback
 

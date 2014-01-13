@@ -2,9 +2,11 @@
 
 local av = require "av"
 local Window = require "av.window"
-local draw2D = require "draw2D"
 
-local win = Window()
+local win = Window
+
+--[[
+local draw2D = require "draw2D"
 
 -- create some agents at random positions & directions:
 local agents = {}
@@ -48,6 +50,7 @@ function draw()
 		draw2D.pop()
 	end
 end
+--]]
 
 av.run()
 
