@@ -453,9 +453,11 @@ AV_EXPORT av_Window * av_window_create(const char * title, int x, int y, int w, 
 	return win;
 }
 AV_EXPORT int av_window_flush(av_Window * avwindow) {
+	fprintf(stderr, "NYI\n");
 	return 0;
 }
 AV_EXPORT int av_window_sync(av_Window * avwindow, int enable) {
+	fprintf(stderr, "NYI\n");
 	return 0;
 }
 AV_EXPORT int av_window_cursor(av_Window * avwindow, int enable) {
@@ -467,14 +469,17 @@ AV_EXPORT int av_window_cursor(av_Window * avwindow, int enable) {
 	return 0;
 }
 AV_EXPORT int av_window_fullscreen(av_Window * avwindow, int enable) {
+	fprintf(stderr, "NYI\n");
 	return 0;
 }
 AV_EXPORT int av_window_destroy(av_Window * window) {
+	fprintf(stderr, "NYI\n");
 	return 0;
 }
 
 // see http://msdn.microsoft.com/en-us/library/dd144901.aspx
 AV_EXPORT int av_screens_count() {
+	fprintf(stderr, "NYI\n");
 	return 1;
 }
 AV_EXPORT av_PixelRect av_screens_main() {

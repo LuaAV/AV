@@ -20,7 +20,7 @@
 @set AVMT=mt /nologo
 @set AVLIB=lib /nologo /nodefaultlib
 
-%AVCOMPILE% /I "luajit-2.0/src" av.cpp av_windows.cpp 
+%AVCOMPILE% /I "../luajit-2.0/src" av.cpp av_windows.cpp 
 @if errorlevel 1 goto :BAD
 
 %AVLINK% /DLL /out:av.dll av.obj av_windows.obj user32.lib ole32.lib gdi32.lib
