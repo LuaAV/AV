@@ -27,10 +27,13 @@ typedef struct av_PixelRect {
 
 typedef struct av_Window {
 	int x, y, width, height;
+	// the last recorded position of the mouse:
+	int mouseX, mouseY;
+	// the last recorded state of the modifiers:
+	bool shift, ctrl, alt, cmd;
+	
 	// the dimensions of the window when restoring from exiting full-screen:
 	av_PixelRect restore_dim;
-
-	bool shift, ctrl, alt, cmd;
 	
 	// whether to clear the window before each frame (true by default)
 	bool autoclear;	

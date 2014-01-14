@@ -78,10 +78,7 @@ local default_draw_callback = function(self, dt)
 	end
 end
 local default_mouse_callback = function(self, event, btn, x, y, dx, dy) end
-local default_key_callback = function(self, event, key) 
-	event = eventnames[event]
-	if event == "down" and key == 27 then self:fullscreen(not self.isfullscreen) end
-end
+local default_key_callback = function(self, event, key) end
 local default_modifiers_callback = function(self, event, key) end
 	
 ffi.metatype("av_Window", {
@@ -116,7 +113,7 @@ ffi.metatype("av_Window", {
 			end)
 		elseif k == "mouse" then
 			self.mouse_callback:set(function(self, event, btn, x, y, dx, dy)
-				event = eventnames[event]
+				event = eventnames[tonumber(event)]
 				local ok, err = xpcall(function()
 					v(self, event, btn, x, y, dx, dy)
 				end, debug_traceback)
@@ -127,7 +124,7 @@ ffi.metatype("av_Window", {
 			end)
 		elseif k == "key" then
 			self.key_callback:set(function(self, event, key)
-				event = eventnames[event]
+				event = eventnames[tonumber(event)]
 				local ok, err = xpcall(function()
 					v(self, event, key)
 				end, debug_traceback)
@@ -138,8 +135,8 @@ ffi.metatype("av_Window", {
 			end)
 		elseif k == "modifiers" then
 			self.modifiers_callback:set(function(self, event, key)
-				event = eventnames[event]
-				key = modifiernames[key]
+				event = eventnames[tonumber(event)]
+				key = modifiernames[tonumber(key)]
 				local ok, err = xpcall(function()
 					v(self, event, key)
 				end, debug_traceback)
@@ -181,7 +178,7 @@ function Window(title, w, h, x, y)
 	h = h or 480
 	
 	local win = lib.av_window_create(title, x, y, w, h)
-	assert(win ~= nil, "window creation failed")
+	--assert(win ~= nil, "window creation failed")
 	
 	-- install gc handler:
 	ffi.gc(win, function(self) 
