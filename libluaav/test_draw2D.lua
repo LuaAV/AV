@@ -2,25 +2,32 @@
 
 local av = require "av"
 local Window = require "av.window"
+local gl = require "gl"
 
 local win = Window("test2D")
 
 function win:mouse(event, btn, x, y, dx, dy) 
-	print("mouse", event, btn, x, y, dx, dy)
+	--print("mouse", event, btn, x, y, dx, dy)
 end
 
 function win:resize(w, h)
-	print("resize", w, h)
+	--print("resize", w, h)
 end
 
 function win:key(e, k)
-	print("key", e, k)
+	--print("key", e, k)
 end
 function win:modifiers(e, k)
-	print("modifiers", e, k)
+	--print("modifiers", e, k)
 end
 function win:create()
-	print("create")
+	--print("create")
+end
+
+
+
+function win:draw()
+	print("draw")
 end
 
 --[[

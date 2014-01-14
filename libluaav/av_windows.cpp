@@ -70,7 +70,11 @@ AV_EXPORT void av_sleep(double seconds) {
 
 static HMODULE HIn;
 
-
+typedef struct av_GLContextW32 {
+	HDC       dc;              // Private GDI device context
+    HGLRC     context;         // Permanent rendering context
+} av_GLContextW32;
+ 
 typedef struct av_WindowW32 : public av_Window {
 
 	HWND hwnd;
@@ -214,6 +218,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			break;
 		}
 	}
+	
+	//SwapBuffers(window->wgl.dc);
 	
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
@@ -432,7 +438,7 @@ AV_EXPORT int av_run_once(int blocking) {
 				break;
 			}	
 			default: {
-				printf("app event\n");
+				//printf("app event\n");
 				DispatchMessage(&msg);
 				break;
 			}
