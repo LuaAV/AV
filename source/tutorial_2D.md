@@ -1,30 +1,9 @@
 
 # Drawing in 2D
 
-LuaAV provides a few utilities for 2D drawing, somewhat similar to Cairo, HTML5 canvas, or Processing, via the [draw2D](doc/modules/draw2D.html) module.
+LuaAV provides a few utilities for 2D drawing, somewhat similar to Cairo, HTML5 canvas, or Processing, via the [draw2D](doc/modules/draw2D.html) module. (It is implemented using the [OpenGL](tutorial_opengl.html) module.)
 
-To do any drawing we first need a window:
-
-```lua
-local av = require "av"
-local Window = require "av.window"
-
--- create and open a new window (with an OpenGL context):
-local win = Window()
-
--- define a draw routine for the window:
-function draw()
-	-- drawing code goes here
-end
-
-av.run()
-```
-
-All of the drawing code should be placed inside the ```draw()``` function.
-
-> Note: if you create more than one window, you can give them different rendering functions by defining a win:draw() method for each one. 
-
-The default coordinate system of the window runs from x == -1 (left side) to x == 1 (right side), and y == -1 (bottom) to y == 1 (top). 
+To do any drawing we first need a [window](tutorial_window.html); then we can implement our drawing inside the ```draw()``` or ```win:draw()``` functions. Note that the default coordinate system of the window runs from x == -1 (left side) to x == 1 (right side), and y == -1 (bottom) to y == 1 (top). 
 
 ```lua
 -- load in the draw2D module:
@@ -51,6 +30,10 @@ Unlike color(), translate(), scale() and rotate() do not replace the previous va
 
 Another useful feature of the transformation matrix is that it behaves like a stack: you can "push" a new matrix before modifying the coordinate system with translate() etc., and then later "pop" it to restore the coordinate system to how it was just before the push(). 
 
+![Stack](http://upload.wikimedia.org/wikipedia/commons/2/29/Data_stack.svg)
+
+*Pushing* the stack allows you to modify the transformation temporarily, and then later *pop* back to the previous state. Usually OpenGL provides up to 16 possible transformations on the stack.
+
 A typical use of this is to share the same rendering code for all agents:
 
 ```lua
@@ -68,16 +51,21 @@ for i = 1, 100 do
 	}
 end
 
+-- get local references to draw2D functions:
+local color, rect, circle = draw2D.color, draw2D.rect, draw2D.circle
+local push, pop = draw2D.push, draw2D.pop
+local translate, rotate, scale = draw2D.translate, draw2D.rotate, draw2D.scale
+
 -- a function to draw an agent
 -- assumes the center of the agent is at (0,0)
 -- the size of the agent runs from (-1,1)
 -- and the agent faces to the positive X axis
 function draw_agent()
-	draw2D.color(0.3)
-	draw2D.rect(0, 0, 1, 0.5)
-	draw2D.color(1)
-	draw2D.circle(0.6, 0.25, 0.2)
-	draw2D.circle(0.6, -0.25, 0.2)
+	color(0.3)
+	rect(0, 0, 1, 0.5)
+	color(1)
+	circle(0.6, 0.25, 0.2)
+	circle(0.6, -0.25, 0.2)
 end
 
 -- the main rendering function:
@@ -85,21 +73,21 @@ function draw()
 	-- iterate all the agents:
 	for i, a in ipairs(agents) do
 		-- cache the current coordinate system:
-		draw2D.push()
+		push()
 		-- change the coordinate system to match the agent:
-		draw2D.translate(a.x, a.y)
-		draw2D.rotate(a.direction)
-		draw2D.scale(a.size)
+		translate(a.x, a.y)
+		rotate(a.direction)
+		scale(a.size)
 		-- call the routine to actually draw an agent:
 		draw_agent()
 		-- restore the previous coordinate sytem:
-		draw2D.pop()
+		pop()
 	end
 end
 ```
 
 > Note that the order of transformations is important: translate followed by scale is quite different to scale followed by translate. For controlling an object, usually the order used is "translate, rotate, scale".
 
-
+As a next step, it would make sense to manage the agent [positions, velocities, accelerations](tutorial_vec_force.html) etc. using ```vec2``` objects (see [vectors](tutorial_vec.html).
 
  

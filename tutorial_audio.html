@@ -7,7 +7,7 @@
 	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
 	<link rel="icon" href="favicon.ico" type="image/x-icon">
 
-	<title>LuaAV: tutorials</title>
+	<title>LuaAV: tutorial_audio</title>
 	<link rel="stylesheet" href="css/main.css" type="text/css" />
 	
 	<!--[if IE]>
@@ -83,53 +83,21 @@
 </div>  -->
 
 <div id="main"><!-- @main -->
-<h1><a name="tutorials"></a>Tutorials</h1>
+<h1><a name="the_audio_driver"></a>The audio driver</h1>
 
-<h2><a name="the_lua_language"></a>The Lua language</h2>
+<h2><a name="starting_with_the_default_settings"></a>Starting with the default settings</h2>
 
-<ul>
-<li><a href="about_lua.html">About Lua</a> &ndash; concepts, characteristics, documentation, and community</li>
-<li><a href="tutorial_lua.html">Quick summary (part 1)</a> &ndash; the basic types, control flow, and scope</li>
-<li><a href="tutorial_lua_part2.html">Quick summary (part 2)</a> &ndash; more advanced features</li>
-</ul>
+<p>Simply load the audio module:</p>
 
-
-<h2><a name="luaav_modules"></a>LuaAV modules</h2>
-
-<ul>
-<li>Opening and using a <a href="tutorial_window.html">window</a>, including keyboard and mouse interaction</li>
-</ul>
+<pre><span class="keyword">local</span> <span class="identifier">audio</span> <span class="symbol">=</span> <span class="global"><a href="http://www.lua.org/manual/5.1/manual.html#pdf-require" target="_blank">require</a></span> <span class="string">"audio"</span>
+</pre>
 
 
-<h3><a name="graphics__opengl_"></a>Graphics (OpenGL)</h3>
+<p>If there is a problem started the default device or driver settings, an error will be reported, but the module will still be loaded so that it can be reconfigured:</p>
 
-<ul>
-<li>Simple drawing with <a href="tutorial_2D.html">draw2D</a></li>
-<li>General use of <a href="tutorial_opengl.html">OpenGL</a>
+<h2><a name="configuring_for_a_different_audio_device_or_parameters"></a>Configuring for a different audio device or parameters</h2>
 
-<ul>
-<li>The <a href="tutorial_opengl_1.html">OpenGL 1 immediate mode style</a> and <a href="tutorial_opengl_2.html">OpenGL 2 vertex buffer style</a> of programming</li>
-</ul>
-</li>
-</ul>
-
-
-<h3><a name="spatial_types"></a>Spatial types</h3>
-
-<ul>
-<li>Working with <a href="tutorial_vec.html">vectors</a></li>
-</ul>
-
-
-<h3><a name="audio"></a>Audio</h3>
-
-<ul>
-<li>Configuring and starting the <a href="tutorial_audio.html">audio</a> driver</li>
-<li><a href="tutorial_scheduling.html">Timing and scheduling</a></li>
-</ul>
-
-
-<h3><a name="interaction"></a>Interaction</h3>
+<p>TODO</p>
 
 <!-- main@ --></div>
 

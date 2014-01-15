@@ -87,7 +87,7 @@
 
 <p>Back to <a href="tutorial_lua.html">part 1</a>.</p>
 
-<h3><a name="modules"></a>Modules</h3>
+<h2><a name="modules"></a>Modules</h2>
 
 <p>A module is (usually) just a table of functions, stored in a separate file. Modules act like external libraries: re-usable, encapsulated, <em>modular</em>. Load modules using <span class="global"><a href="http://www.lua.org/manual/5.1/manual.html#pdf-require" target="_blank">require</a></span>:</p>
 
@@ -122,7 +122,7 @@
 
 <p>Lua guarantees a given module is only executed once. Additional calls to <span class="global"><a href="http://www.lua.org/manual/5.1/manual.html#pdf-require" target="_blank">require</a></span> <span class="string">&ldquo;foo&rdquo;</span> will always return the same table.</p>
 
-<h3><a name="coroutines"></a>Coroutines</h3>
+<h2><a name="coroutines"></a>Coroutines</h2>
 
 <p>Coroutines are a form of collaborative multi-tasking. You can think of them as functions that can be paused in mid execution, to be resumed at that position at a later time.</p>
 
@@ -160,7 +160,7 @@
 
 <p>In LuaAV, coroutines are extended for accurate temporal scheduling, using the <span class="identifier">go</span>, <span class="identifier">wait</span> and <span class="identifier">now</span> functions.</p>
 
-<h3><a name="metatables"></a>Metatables</h3>
+<h2><a name="metatables"></a>Metatables</h2>
 
 <p>Lua does not provide a class-based object-oriented system by default; instead it provides the meta-mechanisms with which many different kinds of object-oriented programming styles can be implemented.</p>
 
@@ -231,7 +231,7 @@
 
 <p>By combining all of these metamethods, and smart use metatables, various forms of class based inheritance can be designed. Several examples can be found <a href="http://loop.luaforge.net/">here</a>.</p>
 
-<h3><a name="luajit_ffi"></a>LuaJIT FFI</h3>
+<h2><a name="luajit_ffi"></a>LuaJIT FFI</h2>
 
 <p>The <a href="http://luajit.org/ext_ffi.html">Foreign-Function Interface (FFI)</a> allows LuaJIT to work with C language data types and functions, and even load and use pre-compiled C libraries. Working with FFI types is usually more difficult (and dangerous!) than plain Lua, but in certain cases it can run a lot faster. To use the ffi, first:</p>
 

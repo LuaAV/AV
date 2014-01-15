@@ -2,7 +2,7 @@
 
 Back to [part 1](tutorial_lua.html).
 
-### Modules
+## Modules
 
 A module is (usually) just a table of functions, stored in a separate file. Modules act like external libraries: re-usable, encapsulated, *modular*. Load modules using ```require```:
 
@@ -37,7 +37,7 @@ return foo
 
 Lua guarantees a given module is only executed once. Additional calls to ```require "foo"``` will always return the same table.
 
-### Coroutines
+## Coroutines
 
 Coroutines are a form of collaborative multi-tasking. You can think of them as functions that can be paused in mid execution, to be resumed at that position at a later time.
 
@@ -75,7 +75,7 @@ coroutine.resume(c) -- prints: 2
 
 In LuaAV, coroutines are extended for accurate temporal scheduling, using the ```go```, ```wait``` and ```now``` functions.
 
-### Metatables
+## Metatables
 
 Lua does not provide a class-based object-oriented system by default; instead it provides the meta-mechanisms with which many different kinds of object-oriented programming styles can be implemented.
 
@@ -148,7 +148,7 @@ By combining all of these metamethods, and smart use metatables, various forms o
 
 
 
-### LuaJIT FFI
+## LuaJIT FFI
 
 The [Foreign-Function Interface (FFI)](http://luajit.org/ext_ffi.html) allows LuaJIT to work with C language data types and functions, and even load and use pre-compiled C libraries. Working with FFI types is usually more difficult (and dangerous!) than plain Lua, but in certain cases it can run a lot faster. To use the ffi, first:
 

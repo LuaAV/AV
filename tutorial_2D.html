@@ -85,30 +85,9 @@
 <div id="main"><!-- @main -->
 <h1><a name="drawing_in_2d"></a>Drawing in 2D</h1>
 
-<p>LuaAV provides a few utilities for 2D drawing, somewhat similar to Cairo, HTML5 canvas, or Processing, via the <a href="doc/modules/draw2D.html">draw2D</a> module.</p>
+<p>LuaAV provides a few utilities for 2D drawing, somewhat similar to Cairo, HTML5 canvas, or Processing, via the <a href="doc/modules/draw2D.html">draw2D</a> module. (It is implemented using the <a href="tutorial_opengl.html">OpenGL</a> module.)</p>
 
-<p>To do any drawing we first need a window:</p>
-
-<pre><span class="keyword">local</span> <span class="identifier">av</span> <span class="symbol">=</span> <span class="global"><a href="http://www.lua.org/manual/5.1/manual.html#pdf-require" target="_blank">require</a></span> <span class="string">"av"</span>
-<span class="keyword">local</span> <span class="identifier">Window</span> <span class="symbol">=</span> <span class="global"><a href="http://www.lua.org/manual/5.1/manual.html#pdf-require" target="_blank">require</a></span> <span class="string">"av.window"</span>
-
-<span class="comment">-- create and open a new window (with an OpenGL context):</span>
-<span class="keyword">local</span> <span class="identifier">win</span> <span class="symbol">=</span> <span class="identifier">Window</span><span class="symbol">(</span><span class="symbol">)</span>
-
-<span class="comment">-- define a draw routine for the window:</span>
-<span class="keyword">function</span> <span class="identifier">draw</span><span class="symbol">(</span><span class="symbol">)</span>
-    <span class="comment">-- drawing code goes here</span>
-<span class="keyword">end</span>
-
-<span class="identifier">av.run</span><span class="symbol">(</span><span class="symbol">)</span>
-</pre>
-
-
-<p>All of the drawing code should be placed inside the <span class="identifier">draw</span><span class="symbol">(</span><span class="symbol">)</span> function.</p>
-
-<blockquote><p>Note: if you create more than one window, you can give them different rendering functions by defining a win:draw() method for each one. </p></blockquote>
-
-<p>The default coordinate system of the window runs from x == -1 (left side) to x == 1 (right side), and y == -1 (bottom) to y == 1 (top). </p>
+<p>To do any drawing we first need a <a href="tutorial_window.html">window</a>; then we can implement our drawing inside the <span class="identifier">draw</span><span class="symbol">(</span><span class="symbol">)</span> or <span class="identifier">win</span><span class="symbol">:</span><span class="identifier">draw</span><span class="symbol">(</span><span class="symbol">)</span> functions. Note that the default coordinate system of the window runs from x == -1 (left side) to x == 1 (right side), and y == -1 (bottom) to y == 1 (top). </p>
 
 <pre><span class="comment">-- load in the draw2D module:</span>
 <span class="keyword">local</span> <span class="identifier">draw2D</span> <span class="symbol">=</span> <span class="global"><a href="http://www.lua.org/manual/5.1/manual.html#pdf-require" target="_blank">require</a></span> <span class="string">"draw2D"</span>
@@ -135,6 +114,10 @@
 
 <p>Another useful feature of the transformation matrix is that it behaves like a stack: you can &ldquo;push&rdquo; a new matrix before modifying the coordinate system with translate() etc., and then later &ldquo;pop&rdquo; it to restore the coordinate system to how it was just before the push(). </p>
 
+<p><img src="http://upload.wikimedia.org/wikipedia/commons/2/29/Data_stack.svg" alt="Stack" /></p>
+
+<p><em>Pushing</em> the stack allows you to modify the transformation temporarily, and then later <em>pop</em> back to the previous state. Usually OpenGL provides up to 16 possible transformations on the stack.</p>
+
 <p>A typical use of this is to share the same rendering code for all agents:</p>
 
 <pre><span class="comment">-- create some agents at random positions & directions:</span>
@@ -151,16 +134,21 @@
     <span class="symbol">}</span>
 <span class="keyword">end</span>
 
+<span class="comment">-- get local references to draw2D functions:</span>
+<span class="keyword">local</span> <span class="identifier">color</span>, <span class="identifier">rect</span>, <span class="identifier">circle</span> <span class="symbol">=</span> <span class="identifier">draw2D.color</span>, <span class="identifier">draw2D.rect</span>, <span class="identifier">draw2D.circle</span>
+<span class="keyword">local</span> <span class="identifier">push</span>, <span class="identifier">pop</span> <span class="symbol">=</span> <span class="identifier">draw2D.push</span>, <span class="identifier">draw2D.pop</span>
+<span class="keyword">local</span> <span class="identifier">translate</span>, <span class="identifier">rotate</span>, <span class="identifier">scale</span> <span class="symbol">=</span> <span class="identifier">draw2D.translate</span>, <span class="identifier">draw2D.rotate</span>, <span class="identifier">draw2D.scale</span>
+
 <span class="comment">-- a function to draw an agent</span>
 <span class="comment">-- assumes the center of the agent is at (0,0)</span>
 <span class="comment">-- the size of the agent runs from (-1,1)</span>
 <span class="comment">-- and the agent faces to the positive X axis</span>
 <span class="keyword">function</span> <span class="identifier">draw_agent</span><span class="symbol">(</span><span class="symbol">)</span>
-    <span class="identifier">draw2D.color</span><span class="symbol">(</span><span class="number">0.3</span><span class="symbol">)</span>
-    <span class="identifier">draw2D.rect</span><span class="symbol">(</span><span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0.5</span><span class="symbol">)</span>
-    <span class="identifier">draw2D.color</span><span class="symbol">(</span><span class="number">1</span><span class="symbol">)</span>
-    <span class="identifier">draw2D.circle</span><span class="symbol">(</span><span class="number">0.6</span>, <span class="number">0.25</span>, <span class="number">0.2</span><span class="symbol">)</span>
-    <span class="identifier">draw2D.circle</span><span class="symbol">(</span><span class="number">0.6</span>, <span class="symbol">-</span><span class="number">0.25</span>, <span class="number">0.2</span><span class="symbol">)</span>
+    <span class="identifier">color</span><span class="symbol">(</span><span class="number">0.3</span><span class="symbol">)</span>
+    <span class="identifier">rect</span><span class="symbol">(</span><span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0.5</span><span class="symbol">)</span>
+    <span class="identifier">color</span><span class="symbol">(</span><span class="number">1</span><span class="symbol">)</span>
+    <span class="identifier">circle</span><span class="symbol">(</span><span class="number">0.6</span>, <span class="number">0.25</span>, <span class="number">0.2</span><span class="symbol">)</span>
+    <span class="identifier">circle</span><span class="symbol">(</span><span class="number">0.6</span>, <span class="symbol">-</span><span class="number">0.25</span>, <span class="number">0.2</span><span class="symbol">)</span>
 <span class="keyword">end</span>
 
 <span class="comment">-- the main rendering function:</span>
@@ -168,21 +156,23 @@
     <span class="comment">-- iterate all the agents:</span>
     <span class="keyword">for</span> <span class="identifier">i</span>, <span class="identifier">a</span> <span class="keyword">in</span> <span class="global"><a href="http://www.lua.org/manual/5.1/manual.html#pdf-ipairs" target="_blank">ipairs</a></span><span class="symbol">(</span><span class="identifier">agents</span><span class="symbol">)</span> <span class="keyword">do</span>
         <span class="comment">-- cache the current coordinate system:</span>
-        <span class="identifier">draw2D.push</span><span class="symbol">(</span><span class="symbol">)</span>
+        <span class="identifier">push</span><span class="symbol">(</span><span class="symbol">)</span>
         <span class="comment">-- change the coordinate system to match the agent:</span>
-        <span class="identifier">draw2D.translate</span><span class="symbol">(</span><span class="identifier">a.x</span>, <span class="identifier">a.y</span><span class="symbol">)</span>
-        <span class="identifier">draw2D.rotate</span><span class="symbol">(</span><span class="identifier">a.direction</span><span class="symbol">)</span>
-        <span class="identifier">draw2D.scale</span><span class="symbol">(</span><span class="identifier">a.size</span><span class="symbol">)</span>
+        <span class="identifier">translate</span><span class="symbol">(</span><span class="identifier">a.x</span>, <span class="identifier">a.y</span><span class="symbol">)</span>
+        <span class="identifier">rotate</span><span class="symbol">(</span><span class="identifier">a.direction</span><span class="symbol">)</span>
+        <span class="identifier">scale</span><span class="symbol">(</span><span class="identifier">a.size</span><span class="symbol">)</span>
         <span class="comment">-- call the routine to actually draw an agent:</span>
         <span class="identifier">draw_agent</span><span class="symbol">(</span><span class="symbol">)</span>
         <span class="comment">-- restore the previous coordinate sytem:</span>
-        <span class="identifier">draw2D.pop</span><span class="symbol">(</span><span class="symbol">)</span>
+        <span class="identifier">pop</span><span class="symbol">(</span><span class="symbol">)</span>
     <span class="keyword">end</span>
 <span class="keyword">end</span>
 </pre>
 
 
 <blockquote><p>Note that the order of transformations is important: translate followed by scale is quite different to scale followed by translate. For controlling an object, usually the order used is &ldquo;translate, rotate, scale&rdquo;.</p></blockquote>
+
+<p>As a next step, it would make sense to manage the agent <a href="tutorial_vec_force.html">positions, velocities, accelerations</a> etc. using <span class="identifier">vec2</span> objects (see <a href="tutorial_vec.html">vectors</a>.</p>
 
 <!-- main@ --></div>
 

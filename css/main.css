@@ -34,12 +34,29 @@ pre {
 	/*font-family: "Courier 10 Pitch", Courier, monospace;*/
 	font-family: Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace;
 	background: #f6f6f6;	
-	padding: 5px;	
+	padding: 10px;	
 	color: #333;
-	border: solid 1px #999;
-	
+	border: solid 1px #ccc;
+	border-radius: 5px;
 }
 
+hr {
+	margin: 20px 0px;
+	border: dotted 1px #ccc;
+}
+
+li {
+	list-style-type:circle;
+	list-style-position: inside;
+}
+
+blockquote {
+	border-left:5px solid #ddd;
+	margin:0;
+	padding:0 0 0 20px;
+	font-style: italic;	
+	color: #333;
+}
 
 a:link,
 a:visited {
@@ -97,14 +114,10 @@ nav li a:hover {
 #main {
 }
 
-#main blockquote {
-	font-style: italic;	
-	color: #555;
-}
-
 #main .comment 		{ font-size: .9em; font-family: Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace; color: #999; font-style: italic; }
-#main .string 		{ font-size: .9em; font-family: Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace; color: #393; }
-#main .number 		{ font-size: .9em; font-family: Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace; color: #366; }
+#main .string,
+#main .number 		{ font-size: .9em; font-family: Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace; color: #d85; }
+/*#main .number 		{ font-size: .9em; font-family: Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace; color: #366; }*/
 #main .keyword 		{ font-size: .9em; font-family: Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace; color: #369; }
 #main .identifier 	{ font-size: .9em; font-family: Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace; color: #633; }
 #main .bang 		{ font-size: .9em; font-family: Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace; color:933; }

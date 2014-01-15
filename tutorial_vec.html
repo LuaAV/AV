@@ -7,7 +7,7 @@
 	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
 	<link rel="icon" href="favicon.ico" type="image/x-icon">
 
-	<title>LuaAV: tutorials</title>
+	<title>LuaAV: tutorial_vec</title>
 	<link rel="stylesheet" href="css/main.css" type="text/css" />
 	
 	<!--[if IE]>
@@ -83,53 +83,27 @@
 </div>  -->
 
 <div id="main"><!-- @main -->
-<h1><a name="tutorials"></a>Tutorials</h1>
+<h1><a name="vectors_and_quaternions"></a>Vectors and quaternions</h1>
 
-<h2><a name="the_lua_language"></a>The Lua language</h2>
+<p>The <span class="identifier">vec2</span>, <span class="identifier">vec3</span> and <span class="identifier">vec4</span> modules add definitions of 2D, 3D and 4D vectors respectively, with many convenient functions, methods and constructors.</p>
 
-<ul>
-<li><a href="about_lua.html">About Lua</a> &ndash; concepts, characteristics, documentation, and community</li>
-<li><a href="tutorial_lua.html">Quick summary (part 1)</a> &ndash; the basic types, control flow, and scope</li>
-<li><a href="tutorial_lua_part2.html">Quick summary (part 2)</a> &ndash; more advanced features</li>
-</ul>
+<p>Vectors are very useful for representing locations in space, directions of movement, relationships between points, velocities, forces, normals and tangents, vertices and other attributes of geometry, and many other spatial relationships. Most graphics languages have some kind of vector primitives; Processing users may recognize similarities between LuaAV&rsquo;s vec2 and Processing&rsquo;s PVector, for example.</p>
 
-
-<h2><a name="luaav_modules"></a>LuaAV modules</h2>
-
-<ul>
-<li>Opening and using a <a href="tutorial_window.html">window</a>, including keyboard and mouse interaction</li>
-</ul>
+<pre><span class="keyword">local</span> <span class="identifier">vec2</span> <span class="symbol">=</span> <span class="global"><a href="http://www.lua.org/manual/5.1/manual.html#pdf-require" target="_blank">require</a></span> <span class="string">"vec2"</span>
+<span class="keyword">local</span> <span class="identifier">vec3</span> <span class="symbol">=</span> <span class="global"><a href="http://www.lua.org/manual/5.1/manual.html#pdf-require" target="_blank">require</a></span> <span class="string">"vec3"</span>
+<span class="keyword">local</span> <span class="identifier">vec4</span> <span class="symbol">=</span> <span class="global"><a href="http://www.lua.org/manual/5.1/manual.html#pdf-require" target="_blank">require</a></span> <span class="string">"vec4"</span>
+</pre>
 
 
-<h3><a name="graphics__opengl_"></a>Graphics (OpenGL)</h3>
+<p>Vectors are frequently used to manage <a href="tutorial_vec_force.html">velocities, forces and other behaviors</a>.</p>
 
-<ul>
-<li>Simple drawing with <a href="tutorial_2D.html">draw2D</a></li>
-<li>General use of <a href="tutorial_opengl.html">OpenGL</a>
+<h2><a name="quaternions"></a>Quaternions</h2>
 
-<ul>
-<li>The <a href="tutorial_opengl_1.html">OpenGL 1 immediate mode style</a> and <a href="tutorial_opengl_2.html">OpenGL 2 vertex buffer style</a> of programming</li>
-</ul>
-</li>
-</ul>
+<p>A quaternion is a four-component complex number (with one real and three imaginary components). It is a very useful mathematical object for dealing with orientations and rotations.</p>
 
+<pre><span class="keyword">local</span> <span class="identifier">quat</span> <span class="symbol">=</span> <span class="global"><a href="http://www.lua.org/manual/5.1/manual.html#pdf-require" target="_blank">require</a></span> <span class="string">"quat"</span>
+</pre>
 
-<h3><a name="spatial_types"></a>Spatial types</h3>
-
-<ul>
-<li>Working with <a href="tutorial_vec.html">vectors</a></li>
-</ul>
-
-
-<h3><a name="audio"></a>Audio</h3>
-
-<ul>
-<li>Configuring and starting the <a href="tutorial_audio.html">audio</a> driver</li>
-<li><a href="tutorial_scheduling.html">Timing and scheduling</a></li>
-</ul>
-
-
-<h3><a name="interaction"></a>Interaction</h3>
 
 <!-- main@ --></div>
 
