@@ -29,6 +29,7 @@ local function new(width, height, numtextures)
 		
 		tex = nil,
 	}, texture)
+	
 	-- register with window/context for rebuild callback
 	gl.context_register(self)
 	return self
@@ -94,12 +95,14 @@ function texture.load(name)
 	return tex
 end	
 
-function texture:destroy()
+function texture:context_destroy()
 	if self.tex then
 		gl.DeleteTextures(unpack(self.tex))
 		self.tex = nil
 	end
 end
+
+function texture:context_create() self:create() end
 
 function texture:create()
 	if not self.tex then	

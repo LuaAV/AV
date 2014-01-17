@@ -146,7 +146,7 @@ static AVAppDelegate * appDelegate = 0;
 	[[NSRunLoop currentRunLoop] addTimer:self->timer forMode:NSDefaultRunLoopMode];
 	[[NSRunLoop currentRunLoop] addTimer:self->timer forMode:NSEventTrackingRunLoopMode];
 	
-	self->AVWindow = 0;
+	self->win = 0;
 	
 	return self;
 }

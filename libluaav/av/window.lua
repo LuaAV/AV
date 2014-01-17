@@ -52,6 +52,12 @@ local eventnames = {
 	[lib.AV_EVENT_KEYUP] = "up",
 }
 
+local buttonnames = {
+	[0] = "left",
+	[1] = "right",
+	[2] = "middle",
+}
+
 local modifiernames = {
 	[lib.AV_MODIFIERS_SHIFT] = "shift",
 	[lib.AV_MODIFIERS_CTRL] = "ctrl",
@@ -60,16 +66,26 @@ local modifiernames = {
 }
 
 local default_create_callback = function(self)
-	gl.context_changed()
+	gl.context_destroy() -- TODO: move to close handler
+	gl.context_create()
 end
-local default_resize_callback = function(self, w, h) end
-local default_draw_callback = function(self, dt) 
-	-- if win:draw() was not assigned,
-	-- use the global draw() instead
-	local draw = _G.draw
-	if draw then
+local default_resize_callback = function(self, w, h) 
+	local f = _G.resize
+	if f and type(f) == "function" then
 		-- call safely with nice error handling:
-		local ok, err = xpcall(function() draw(self, dt) end, debug_traceback)
+		local ok, err = xpcall(function() f(w, h) end, debug_traceback)
+		if not ok then
+			print(err)
+			-- if an error was thrown, cancel the draw to prevent endless error spew:
+			_G.resize = nil
+		end
+	end
+end
+local default_draw_callback = function(self, dt) 
+	local f = _G.draw
+	if f and type(f) == "function" then
+		-- call safely with nice error handling:
+		local ok, err = xpcall(function() f(dt) end, debug_traceback)
 		if not ok then
 			print(err)
 			-- if an error was thrown, cancel the draw to prevent endless error spew:
@@ -77,9 +93,47 @@ local default_draw_callback = function(self, dt)
 		end
 	end
 end
-local default_mouse_callback = function(self, event, btn, x, y, dx, dy) end
-local default_key_callback = function(self, event, key) end
-local default_modifiers_callback = function(self, event, key) end
+local default_mouse_callback = function(self, event, btn, x, y, dx, dy) 
+	local f = _G.mouse
+	if f and type(f) == "function" then
+		-- call safely with nice error handling:
+		event = eventnames[tonumber(event)]
+		btn = buttonnames[tonumber(btn)]
+		local ok, err = xpcall(function() f(event, btn, x, y, dx, dy) end, debug_traceback)
+		if not ok then
+			print(err)
+			-- if an error was thrown, cancel the draw to prevent endless error spew:
+			_G.mouse = nil
+		end
+	end
+end
+local default_key_callback = function(self, event, key) 
+	local f = _G.key
+	if f and type(f) == "function" then
+		-- call safely with nice error handling:
+		event = eventnames[tonumber(event)]
+		local ok, err = xpcall(function() f(event, key) end, debug_traceback)
+		if not ok then
+			print(err)
+			-- if an error was thrown, cancel the draw to prevent endless error spew:
+			_G.key = nil
+		end
+	end
+end
+local default_modifiers_callback = function(self, event, key) 
+	local f = _G.key
+	if f and type(f) == "function" then
+		-- call safely with nice error handling:
+		event = eventnames[tonumber(event)]
+		key = modifiernames[tonumber(key)]
+		local ok, err = xpcall(function() f(event, key) end, debug_traceback)
+		if not ok then
+			print(err)
+			-- if an error was thrown, cancel the draw to prevent endless error spew:
+			_G.key = nil
+		end
+	end
+end
 	
 ffi.metatype("av_Window", {
 	--__tostring = function(self) return format("Window(%p)", self) end,
@@ -114,6 +168,7 @@ ffi.metatype("av_Window", {
 		elseif k == "mouse" then
 			self.mouse_callback:set(function(self, event, btn, x, y, dx, dy)
 				event = eventnames[tonumber(event)]
+				btn = buttonnames[tonumber(btn)]
 				local ok, err = xpcall(function()
 					v(self, event, btn, x, y, dx, dy)
 				end, debug_traceback)
@@ -131,9 +186,9 @@ ffi.metatype("av_Window", {
 				if not ok then
 					print(err)
 					self.key_callback:set(default_key_callback)
+					self.modifiers_callback:set(default_modifiers_callback)
 				end
 			end)
-		elseif k == "modifiers" then
 			self.modifiers_callback:set(function(self, event, key)
 				event = eventnames[tonumber(event)]
 				key = modifiernames[tonumber(key)]
@@ -142,6 +197,7 @@ ffi.metatype("av_Window", {
 				end, debug_traceback)
 				if not ok then
 					print(err)
+					self.key_callback:set(default_key_callback)
 					self.modifiers_callback:set(default_modifiers_callback)
 				end
 			end)

@@ -21,11 +21,15 @@ local function new(ctor)
 	return self
 end
 
-function displaylist:destroy()
+function displaylist:context_destroy()
 	if self.id then
 		gl.DeleteLists(self.id, 1)
 		self.id = nil
 	end
+end
+
+function displaylist:context_create()
+	self:create()
 end
 
 function displaylist:create()
@@ -46,10 +50,4 @@ function displaylist:draw()
 end
 displaylist.__call = displaylist.draw
 
-setmetatable(displaylist, {
-	__call = function(t, f)
-		return new(f)
-	end
-})
-
-return displaylist
+return new

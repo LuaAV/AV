@@ -398,6 +398,9 @@ function audio.scope()
 	end
 end
 
-audio.start()
+local ok, err = pcall(audio.start)
+if not ok then
+	print("error starting audio; perhaps try a different device?", err)
+end
 
 return audio

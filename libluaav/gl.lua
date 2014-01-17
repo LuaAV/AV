@@ -4751,18 +4751,40 @@ end
 
 -- a set of opengl objects that require rebuilding when the context is rebuilt
 local globjects = {}
--- weak-keyed in order to allow objects to be garbage collected
+-- weak-keyed in order to allow objects garbage collection
 setmetatable(globjects, { __mode = 'k' })
 
+local function globject_destroy(o) 
+	print("globject_destroy", o)
+	if o.context_destroy then o:context_destroy() end
+end
+
 function gl.context_register(o)
-	globjects[o] = true
+
+	-- this is a hacky workaround because tables don't have __gc in Lua 5.1
+	local sentinel = newproxy(true)
+	getmetatable(sentinel).__gc = globject_destroy
+
+	-- so when o is no longer reachable, sentinel will be garbage collected
+	-- this triggers __gc and thus 
+	globjects[o] = sentinel
+end
+
+function gl.context_destroy()
+	for o in pairs(globjects) do
+		if o.context_destroy then o:context_destroy() end
+	end
+end
+
+function gl.context_create()
+	for o in pairs(globjects) do
+		if o.context_create then o:context_create() end
+	end
 end
 
 function gl.context_changed()
-	for o in pairs(globjects) do
-		o:destroy()
-		o:create()
-	end
+	gl.context_destroy()
+	gl.context_create()
 end
 
 gl.extensions_table = false

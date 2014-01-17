@@ -1,37 +1,30 @@
 #!/usr/bin/env luajit
 
 local av = require "av"
-local Window = require "av.window"
+local Window = require "av.Window"
 local gl = require "gl"
+local draw2D = require "draw2D"
 
 local win = Window("test2D")
 
 function win:mouse(event, btn, x, y, dx, dy) 
-	--print("mouse", event, btn, x, y, dx, dy)
+	print("mouse", event, btn, x, y, dx, dy)
 end
 
 function win:resize(w, h)
-	--print("resize", w, h)
+	print("resize", w, h)
 end
 
 function win:key(e, k)
-	--print("key", e, k)
-end
-function win:modifiers(e, k)
-	--print("modifiers", e, k)
+	print("key", e, k)
+	if e == "down" and k == 27 then
+		win:fullscreen(not win.isfullscreen)
+	end
 end
 function win:create()
-	--print("create")
+	print("create")
 end
 
-
-
-function win:draw()
-	print("draw")
-end
-
---[[
-local draw2D = require "draw2D"
 
 -- create some agents at random positions & directions:
 local agents = {}
@@ -75,7 +68,6 @@ function draw()
 		draw2D.pop()
 	end
 end
---]]
 
 av.run()
 
