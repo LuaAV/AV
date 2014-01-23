@@ -2021,7 +2021,7 @@ local glfw = setmetatable({
 		if not ok then
 			ok, v = pcall(libsym, k)
 			if not ok then
-				error("symbol not found: ", k)
+				error("symbol not found: " .. k)
 			end
 		end
 		self[k] = v
@@ -2035,9 +2035,6 @@ function reshape( window, width,  height )
 	print("reshape", width, height)
 end
 
-function key(window, k, s, action, mods )
-	print(k, s, action, mods)
-end
 
 function draw()
 	gl.Clear()
@@ -2053,35 +2050,93 @@ if glfw.Init() == 0 then
 end
 glfw.WindowHint(glfw.DEPTH_BITS, 16);
 
-local window = glfw.CreateWindow( 300, 300, "Gears", nil, nil );
-if (window == NULL) then
-	error("Failed to open GLFW window\n" );
-	glfw.Terminate();
+
+local window
+local fs = false
+local title = "LuaJIT"
+
+function key(window, k, s, action, mods )
+	print(k, s, action, mods)
+	if k == 256 and action == 1 then
+		glfw.DestroyWindow(window)
+		fs = not fs
+		open()
+	end
 end
 
-glfw.SetFramebufferSizeCallback(window, reshape);
-glfw.SetKeyCallback(window, key);
+function open()
+	local w, h
+	local monitor = glfw.GetPrimaryMonitor()
+	local mode = glfw.GetVideoMode(monitor)
+	
+	glfw.WindowHint(glfw.STEREO, 0)
+	glfw.WindowHint(glfw.RED_BITS, mode.redBits)
+	glfw.WindowHint(glfw.GREEN_BITS, mode.greenBits)
+	glfw.WindowHint(glfw.BLUE_BITS, mode.blueBits)
+	glfw.WindowHint(glfw.DEPTH_BITS, 24)
+	-- GLFW_SAMPLES (0 for no multisampling)
+	-- GLFW_SRGB_CAPABLE
+	--[[
+		int count;
+		GLFWmonitor** monitors = glfwGetMonitors(&count);
+	--]]
+	
+	if not fs then
+		w, h = 300, 300
+		glfw.WindowHint(glfw.RESIZABLE, 1)
+		glfw.WindowHint(glfw.DECORATED, 1)
+		-- To create the window at a specific position, make it initially invisible using the GLFW_VISIBLE window hint, set its position and then show it.
+		
+		glfw.WindowHint(glfw.VISIBLE, 0)
+		window = glfw.CreateWindow( w, h, title, nil, nil )
+		glfw.SetWindowPos(window, 0, 0)
+		glfw.ShowWindow(window)
+	else
+		glfw.WindowHint(glfw.REFRESH_RATE, 0) -- highest fps possible
+		
+		-- The window whose context to share resources with, or NULL to not share resources.
+		local share = nil
+		
+		w, h = mode.width, mode.height
+		print("fullscreen on", ffi.string(glfw.GetMonitorName(monitor)))
+		window = glfw.CreateWindow( w, h, title, monitor, share )
+	end
+	if (window == NULL) then
+		error("Failed to open GLFW window\n" );
+		glfw.Terminate();
+	end
+	
+	glfw.SetFramebufferSizeCallback(window, reshape);
+	glfw.SetKeyCallback(window, key);
 
-glfw.MakeContextCurrent(window);
-glfw.SwapInterval( 1 );
+	glfw.MakeContextCurrent(window);
+	glfw.SwapInterval( 1 );
+end
 
--- width, height are int
---glfw.GetFramebufferSize(window, &width, &height);
--- reshape(window, width, height);
+open()
 
+-- this is necessary because glfw.PollEvents() may call back into Lua 
+-- via the GLFW callbacks
+local function pollevents() glfw.PollEvents() end
+jit.off(pollevents)
+
+local t0 = glfw.GetTime()
 function step()
-	draw();
-	--animate();
-
+	local t = glfw.GetTime()
+	local dt = t - t0
+	t0 = t
+	--print(1/dt)
+	--animate()
+	
+	draw()
 	-- Swap buffers
-	glfw.SwapBuffers(window);
-	glfw.PollEvents();
+	glfw.SwapBuffers(window)
+	
+	pollevents()
 end
-
-jit.off(step)
 
 while( glfw.WindowShouldClose(window) == 0 ) do
 	step()
 end
 
-glfw.Terminate();
+glfw.Terminate()

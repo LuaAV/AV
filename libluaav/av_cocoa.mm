@@ -61,6 +61,8 @@ typedef struct av_WindowCocoa : public av_Window {
 		this->y = y;
 		this->width = w;
 		this->height = h;
+		
+		frame = 0;
 	
 		shift = ctrl = alt = cmd = 0;
 		autoclear = 1;
@@ -428,9 +430,12 @@ https://developer.apple.com/library/mac/documentation/cocoa/Reference/Applicatio
 	[super reshape];
 	if (win && win->resize_callback) {
 		NSRect dim = [[[self window] contentView] bounds];
-		win->width = dim.size.width;
-		win->height = dim.size.height;
-		win->resize_callback(win, dim.size.width, dim.size.height);
+		// for some reason I get sporadic reshape events with width == 0
+		if (dim.size.width > 0 && dim.size.height > 0) {
+			win->width = dim.size.width;
+			win->height = dim.size.height;
+			win->resize_callback(win, dim.size.width, dim.size.height);
+		}
 	}
 }
 
@@ -446,7 +451,10 @@ float rot = 0.;
 	double dt = t1 - t;
 	t = t1;
 	
-	if (win) {
+	if (win && win->draw_callback) {
+		if ([[self openGLContext] view] != self) {
+			[[self openGLContext] setView:self];
+		}
 		[[self openGLContext] makeCurrentContext];
 		
 		//CGLLockContext(self.openGLContext.CGLContextObj);
@@ -460,10 +468,17 @@ float rot = 0.;
 			glClearColor(0, 0, 0, 1);
 			glClear(GL_COLOR_BUFFER_BIT);		
 		} 
-		if (win->draw_callback) win->draw_callback(win, dt);
 		
-	
-		//glFlush();
+		if (win->frame == 0) {
+			win->create_callback(win);
+		}
+		win->frame++;
+		
+		
+		
+		win->draw_callback(win, dt);
+		
+		glFlush();
 		[[self openGLContext] flushBuffer];
 		//CGLUnlockContext(self.openGLContext.CGLContextObj);
 	}
@@ -480,8 +495,9 @@ float rot = 0.;
     //CGLLockContext(self.openGLContext.CGLContextObj);
 
     // all opengl prep goes here
-	if (win && win->create_callback) win->create_callback(win);
-
+	//if (win && win->create_callback) win->create_callback(win);
+	//if (win) win->frame = 0;
+	
     //CGLUnlockContext(self.openGLContext.CGLContextObj);
 }
 
@@ -490,8 +506,6 @@ float rot = 0.;
 
 -(void)windowWillClose:(NSNotification *)note {
 	NSLog(@"windowWillClose");
-	[timer invalidate];
-	[timer release];
 }
 
 @end
@@ -543,6 +557,7 @@ void av_WindowCocoa::open() {
 	
 	// close existing window
 	close();
+	frame = 0;
 	
 	NSLog(@"making new window");
 	
@@ -579,10 +594,13 @@ void av_WindowCocoa::open() {
 	
 	// activate it:
 	[window makeKeyAndOrderFront:window];
+	
 }
 
 void av_WindowCocoa::close() {
 	if (window) {
+		[glview->timer invalidate];
+		[glview->timer release];
 		[window close];
 	}
 }

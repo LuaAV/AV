@@ -66,6 +66,7 @@ local modifiernames = {
 }
 
 local default_create_callback = function(self)
+	print("default_create_callback")
 	gl.context_destroy() -- TODO: move to close handler
 	gl.context_create()
 end

@@ -29,6 +29,10 @@ typedef struct av_Window {
 	int x, y, width, height;
 	// the last recorded position of the mouse:
 	int mouseX, mouseY;
+	
+	// the current frame (since creation):
+	int frame, padding;
+	
 	// the last recorded state of the modifiers:
 	bool shift, ctrl, alt, cmd;
 	

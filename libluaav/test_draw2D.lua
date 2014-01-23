@@ -21,9 +21,6 @@ function win:key(e, k)
 		win:fullscreen(not win.isfullscreen)
 	end
 end
-function win:create()
-	print("create")
-end
 
 
 -- create some agents at random positions & directions:
