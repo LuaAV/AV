@@ -20,6 +20,7 @@
 ### Spatial types
 
 - Working with [vectors](tutorial_vec.html)
+	- Using vectors for [velocities, forces and agent behaviors](tutorial_vec_force.html)
 
 ### Audio
 

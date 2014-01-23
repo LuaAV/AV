@@ -319,3 +319,7 @@ go(dofile, myscriptname)
 ## Script-controlled schedulers
 
 You can also create your own schedulers, which are independent of CPU clock, using the ```scheduler.create()``` function. A scheduler is an object that provides its own ```now()```, ```wait()``` and ```go()``` functions. Unlike the main scheduler, the logical time of this user-controlled scheduler is not tied to the CPU clock, but instead is advanced within the script using the ```advance()``` or ```update()``` functions of the created scheduler.
+
+----
+
+[![animation](http://25.media.tumblr.com/b5bbc21c3907802325301007ce31303f/tumblr_mjksjiMKYr1qamt2wo1_500.gif)](http://www.thisiscolossal.com/2012/05/delightful-paper-pop-ups-by-jenny-chen/)
